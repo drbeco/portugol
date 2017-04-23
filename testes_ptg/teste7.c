@@ -1,4 +1,4 @@
-//    Gerado pelo compilador PORTUGOL versao 1.0
+//    Gerado pelo compilador PORTUGOL versao 1.1
 //    Autor: Ruben Carlo Benante
 //    Email: benante@gmail.com
 //    Data: 23/04/2009
