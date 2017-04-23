@@ -1,0 +1,31 @@
+// Compilador PORTUGOL v.1.0
+// Autor: Ruben Carlo Benante
+// Email: benante@gmail.com
+// Data: 23/04/2009
+//
+// toda a linguagem
+
+//comentario
+inicio; //inicio
+A=1; //atribuicao inteira
+B=2.0; //atribuicao flutuante
+se(B==2.0) entao
+  imprima 123;
+C=3.0;
+D=1.0 + 1 * (2 / -3 + 4.0) - A * B + C; //expressao com inteiros, flutuantes e variaveis
+se(A==1 ou (B!=2.0 e C>=3.0)) entao //relacionais e e ou, logicos ==, !=, >=
+    se (D<=0) entao //ambiguidade se-entao-entao-senao, logico <=
+        imprima 111.1; //imprima
+    senao
+        inicio; //bloco de comandos
+        imprima C;
+        se(nao (A>2 e B<3.0)) entao //relacional nao, logicos > e <
+            imprima 222.2;
+        fim; //fim do bloco de comandos
+; //faz nada (nop)
+imprima A;
+imprima B;
+imprima C;
+;
+imprima D;
+fim; //fim
