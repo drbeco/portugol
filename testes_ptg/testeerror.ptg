@@ -1,0 +1,9 @@
+//comentario
+inicio;
+imprima A;
+imprima B; //erro b minusculo corrigido
+imprima C;
+imprima d; //erro d minusculo
+imprima E;
+fim;
+
