@@ -1,5 +1,5 @@
 /*
-    Compilador PORTUGOL v.1.0
+    Compilador PORTUGOL v.1.1
     Autor: Ruben Carlo Benante
     Email: benante@gmail.com
     Data: 23/04/2009
@@ -9,6 +9,7 @@
 #include <string.h>
 #include "portugol.h"
 #include "y.tab.h"
+extern FILE* yyout;
 
 void gerac(tipoNodo *p, int n)
 {
@@ -21,136 +22,136 @@ void gerac(tipoNodo *p, int n)
     switch(p->tipo)
     {
         case tipoConFlutuante:
-            printf("%.2f",p->fcon.fval);
+            fprintf(yyout, "%.2f",p->fcon.fval);
             break;
         case tipoID:
-            printf("var[%d]",p->id.i);
+            fprintf(yyout, "var[%d]",p->id.i);
             break;
         case tipoOpr:
             switch(p->opr.oper)
             {
                 case INICIO:
-                    printf("%s{\n",espaco);
+                    fprintf(yyout, "%s{\n",espaco);
                     gerac(p->opr.op[0], n+1);
-                    printf("%s}\n",espaco);
+                    fprintf(yyout, "%s}\n",espaco);
                     break;
                 case SE:
-                    printf("%sif(",espaco);
+                    fprintf(yyout, "%sif(",espaco);
                     gerac(p->opr.op[0], n+1);
-                    printf(")\n");
+                    fprintf(yyout, ")\n");
                     gerac(p->opr.op[1], n+1);
                     if(p->opr.nops>2)
                     {
-                        printf("%selse\n",espaco);
+                        fprintf(yyout, "%selse\n",espaco);
                         gerac(p->opr.op[2], n+1);
                     }
                     break;
                 case IMPRIMA:
                     if(p->opr.op[0]->tipo==tipoID)
                     {
-                        printf("%sprintf(\"%%.2f\\n\", ",espaco);
+                        fprintf(yyout, "%sprintf(\"%%.2f\\n\", ",espaco);
                         gerac(p->opr.op[0], n+1);
-                        printf(");\n");
+                        fprintf(yyout, ");\n");
                     }
                     else
                         if(p->opr.op[0]->tipo==tipoConFlutuante)
                         {
-                            printf("%sprintf(\"",espaco);
+                            fprintf(yyout, "%sprintf(\"",espaco);
                             gerac(p->opr.op[0], n+1);
-                            printf("\\n\");\n");
+                            fprintf(yyout, "\\n\");\n");
                         }
                         else /* tipoOpr */
                         {
-                            printf("%sprintf(\"%%.2f\\n\", ( ",espaco);
+                            fprintf(yyout, "%sprintf(\"%%.2f\\n\", ( ",espaco);
                             gerac(p->opr.op[0], n+1);
-                            printf(" ));\n");
+                            fprintf(yyout, " ));\n");
                         }
                     break;
                 case ';':
-                    printf("%s;\n",espaco);
+                    fprintf(yyout, "%s;\n",espaco);
                     break;
                 case 'l': /* lista de comandos */
                     gerac(p->opr.op[0], n);
                     gerac(p->opr.op[1], n);
                     break;
                 case '=':
-                    printf("%s",espaco);
+                    fprintf(yyout, "%s",espaco);
                     gerac(p->opr.op[0], n+1);
-                    printf(" = ");
+                    fprintf(yyout, " = ");
                     gerac(p->opr.op[1], n+1);
-                    printf(";\n");
+                    fprintf(yyout, ";\n");
                     break;
                 case UMENOS:
-                    printf("-");
+                    fprintf(yyout, "-");
                     gerac(p->opr.op[0], n+1);
                     break;
                 case '+':
                     gerac(p->opr.op[0], n+1);
-                    printf(" + ");
+                    fprintf(yyout, " + ");
                     gerac(p->opr.op[1], n+1);
                     break;
                 case '-':
                     gerac(p->opr.op[0], n+1);
-                    printf(" - ");
+                    fprintf(yyout, " - ");
                     gerac(p->opr.op[1], n+1);
                     break;
                 case '*':
                     gerac(p->opr.op[0], n+1);
-                    printf(" * ");
+                    fprintf(yyout, " * ");
                     gerac(p->opr.op[1], n+1);
                     break;
                 case '/':
                     gerac(p->opr.op[0], n+1);
-                    printf(" / ");
+                    fprintf(yyout, " / ");
                     gerac(p->opr.op[1], n+1);
                     break;
                 case '(':
-                    printf("( ");
+                    fprintf(yyout, "( ");
                     gerac(p->opr.op[0], n+1);
-                    printf(" )");
+                    fprintf(yyout, " )");
                     break;
                 case LT:
                     gerac(p->opr.op[0], n+1);
-                    printf(" < ");
+                    fprintf(yyout, " < ");
                     gerac(p->opr.op[1], n+1);
                     break;
                 case GT:
                     gerac(p->opr.op[0], n+1);
-                    printf(" > ");
+                    fprintf(yyout, " > ");
                     gerac(p->opr.op[1], n+1);
                     break;
                 case GE:
                     gerac(p->opr.op[0], n+1);
-                    printf(" >= ");
+                    fprintf(yyout, " >= ");
                     gerac(p->opr.op[1], n+1);
                     break;
                 case LE:
                     gerac(p->opr.op[0], n+1);
-                    printf(" <= ");
+                    fprintf(yyout, " <= ");
                     gerac(p->opr.op[1], n+1);
                     break;
                 case NE:
                     gerac(p->opr.op[0], n+1);
-                    printf(" != ");
+                    fprintf(yyout, " != ");
                     gerac(p->opr.op[1], n+1);
                     break;
                 case EQ:
                     gerac(p->opr.op[0], n+1);
-                    printf(" == ");
+                    fprintf(yyout, " == ");
                     gerac(p->opr.op[1], n+1);
                     break;
                 case E:
                     gerac(p->opr.op[0], n+1);
-                    printf(" && ");
+                    fprintf(yyout, " && ");
                     gerac(p->opr.op[1], n+1);
                     break;
                 case OU:
                     gerac(p->opr.op[0], n+1);
-                    printf(" || ");
+                    fprintf(yyout, " || ");
                     gerac(p->opr.op[1], n+1);
                     break;
                 case NAO:
-                    printf("!");
+                    fprintf(yyout, "!");
                     gerac(p->opr.op[0], n+1);
                     break;
             }

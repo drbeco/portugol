@@ -1,5 +1,5 @@
 /*
-    Compilador PORTUGOL v.1.0
+    Compilador PORTUGOL v.1.1
     Autor: Ruben Carlo Benante
     Email: benante@gmail.com
     Data: 23/04/2009

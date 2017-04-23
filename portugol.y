@@ -1,6 +1,6 @@
 %{
 /*
-    Compilador PORTUGOL v.1.0
+    Compilador PORTUGOL v.1.1
     Autor: Ruben Carlo Benante
     Email: benante@gmail.com
     Data: 23/04/2009
@@ -47,7 +47,7 @@ void liberaNodo(tipoNodo *p);
 %%
 
 programa:
-    funcao  { exit(0); }
+    funcao  { return 0; }
     ;
 
 funcao:

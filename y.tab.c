@@ -65,7 +65,7 @@
 #line 1 "portugol.y" /* yacc.c:339  */
 
 /*
-    Compilador PORTUGOL v.1.0
+    Compilador PORTUGOL v.1.1
     Autor: Ruben Carlo Benante
     Email: benante@gmail.com
     Data: 23/04/2009
@@ -1311,7 +1311,7 @@ yyreduce:
     {
         case 2:
 #line 50 "portugol.y" /* yacc.c:1646  */
-    { exit(0); }
+    { return 0; }
 #line 1316 "y.tab.c" /* yacc.c:1646  */
     break;
 

@@ -490,7 +490,7 @@ char *yytext;
 #line 1 "portugol.l"
 #line 2 "portugol.l"
 /*
-    Compilador PORTUGOL v.1.0
+    Compilador PORTUGOL v.1.1
     Autor: Ruben Carlo Benante
     Email: benante@gmail.com
     Data: 23/04/2009
@@ -1908,40 +1908,50 @@ int yywrap(void)
 
 void yyerror(char *s)
 {
-    printf("\n  //Linha:%d Erro: %s Token: %s", lineno, s, yytext);
+    fprintf(stderr, "//    Linha:%d Erro: %s Token: %s\n", lineno, s, yytext);
 }
 
 int main(int ac, char **av)
 {
     int i;
 
-    if(ac>1 && (yyin = fopen(av[1],"r"))==NULL)
+    yyin=stdin;
+    yyout=stdout;
+    if(ac>2) //tem arquivo de saida
+        if((yyout = fopen(av[2],"w"))==NULL)
+        {
+            fprintf(stderr, "Nao consigo abrir arquivo de saida.\n");
+            exit(1);
+        }
+
+    if(ac>1)
     {
-        perror(av[1]);
-        exit(1);
+        if((yyin = fopen(av[1],"r"))==NULL)
+        {
+            fprintf(stderr, "Nao consigo abrir arquivo de entrada.\n");
+            exit(1);
+        }
+        fprintf(yyout, "//    Gerado pelo compilador PORTUGOL versao 1.1\n");
+        fprintf(yyout, "//    Autor: Ruben Carlo Benante\n");
+        fprintf(yyout, "//    Email: benante@gmail.com\n");
+        fprintf(yyout, "//    Data: 23/04/2009\n\n");
+        fprintf(yyout, "#include <stdio.h>\n");
+        fprintf(yyout, "#include <stdlib.h>\n\n");
+        fprintf(yyout, "float var[26] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};\n\n");
+        fprintf(yyout, "int main(void)\n");
     }
-
-    if(ac>2 && (yyout = fopen(av[2],"w"))==NULL)
-    {
-        perror(av[2]);
-        exit(1);
-    }
-
-    printf("//    Gerado pelo compilador PORTUGOL versao 1.0\n");
-    printf("//    Autor: Ruben Carlo Benante\n");
-    printf("//    Email: benante@gmail.com\n");
-    printf("//    Data: 23/04/2009\n\n");
-    printf("#include <stdio.h>\n");
-    printf("#include <stdlib.h>\n\n");
-    printf("float var[26] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};\n\n");
-    printf("int main(void)\n");
-
-    if(!yyparse())
-        printf("\nSucesso! Programa em Portugol compilado.\n\n");
     else
+        fprintf(yyout, "Compilador PORTUGOL versao 1.1, by Ruben Carlo Benante.\n");
+
+    if(yyparse()) //falhou
     {
-        printf("\n\n  printf(\"Falha! Programa em Portugol nao compilado.\\n\\n\");");
-        printf("\n  //Falha! Programa em Portugol nao compilado.\n\n}//main falhou");
+        fprintf(stderr, "//    Falha! Programa em Portugol nao compilado.\n\n");
+        if(yyout!=stdout)
+            fprintf(yyout, "//    Falha! Programa em Portugol nao compilado.\n\n");
+    return 1;
     }
+
+    fprintf(stderr, "\n//    Sucesso! Programa em Portugol compilado.\n\n");
+    return 0;
 }
 
