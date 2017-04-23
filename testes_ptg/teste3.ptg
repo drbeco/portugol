@@ -1,0 +1,11 @@
+// Compilador PORTUGOL v.1.0
+// Autor: Ruben Carlo Benante
+// Email: benante@gmail.com
+// Data: 23/04/2009
+//
+// uso de variaveis
+
+inicio;
+A=1.0;
+imprima A;
+fim;

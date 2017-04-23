@@ -1,0 +1,13 @@
+// Compilador PORTUGOL v.1.0
+// Autor: Ruben Carlo Benante
+// Email: benante@gmail.com
+// Data: 23/04/2009
+//
+// expressoes
+
+inicio;
+A=1.0;
+B=-1.3;
+C=1.0/(A*(B+3.0)-10.0);
+imprima A+B-2*C;
+fim;

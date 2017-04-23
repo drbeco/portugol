@@ -1,0 +1,10 @@
+// Compilador PORTUGOL v.1.0
+// Autor: Ruben Carlo Benante
+// Email: benante@gmail.com
+// Data: 23/04/2009
+//
+// imprima constante
+
+inicio;
+imprima 5.0;
+fim;

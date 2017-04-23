@@ -1,0 +1,24 @@
+// Compilador PORTUGOL v.1.0
+// Autor: Ruben Carlo Benante
+// Email: benante@gmail.com
+// Data: 23/04/2009
+//
+// bloco de comandos
+
+inicio;
+A=1.0;
+B=2.0;
+C=3.0;
+se(A!=1.0) entao
+    inicio;
+    imprima A;
+    imprima B;
+    fim;
+senao
+    inicio;
+    A=A+1.0;
+    imprima 113.0;
+    imprima A;
+    fim;
+imprima C;
+fim;
