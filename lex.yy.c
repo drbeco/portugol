@@ -383,9 +383,9 @@ static yyconst flex_int16_t yy_accept[56] =
         0,    0,   24,   22,   20,   19,   22,   16,   16,   18,
        12,   16,   11,   17,   13,   22,   22,   22,   22,   22,
        20,   10,   21,    0,   18,    8,    9,    7,    0,    0,
-        0,    0,    0,   14,    1,   21,   18,    0,    6,    0,
+        0,    0,    0,   14,    1,   21,   18,    0,    5,    0,
         0,   15,    0,    0,    0,    0,    0,    2,    0,    0,
-        3,    0,    5,    4,    0
+        3,    0,    4,    6,    0
     } ;
 
 static yyconst flex_int32_t yy_ec[256] =
@@ -490,7 +490,7 @@ char *yytext;
 #line 1 "portugol.l"
 #line 2 "portugol.l"
 /*
-    Compilador PORTUGOL v.1.1
+    Compilador PORTUGOL v.1q
     Autor: Ruben Carlo Benante
     Email: benante@gmail.com
     Data: 23/04/2009
@@ -796,17 +796,17 @@ YY_RULE_SETUP
 case 4:
 YY_RULE_SETUP
 #line 24 "portugol.l"
-{ return IMPRIMA; }
+{ return INICIO; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
 #line 25 "portugol.l"
-{ return INICIO; }
+{ return FIM; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
 #line 26 "portugol.l"
-{ return FIM; }
+{ return IMPRIMA; }
 	YY_BREAK
 /* Pontuacao */
 case 7:
@@ -1931,17 +1931,15 @@ int main(int ac, char **av)
             fprintf(stderr, "Nao consigo abrir arquivo de entrada.\n");
             exit(1);
         }
-        fprintf(yyout, "//    Gerado pelo compilador PORTUGOL versao 1.1\n");
+        fprintf(yyout, "//    Gerado pelo compilador PORTUGOL versao 1q\n");
         fprintf(yyout, "//    Autor: Ruben Carlo Benante\n");
         fprintf(yyout, "//    Email: benante@gmail.com\n");
         fprintf(yyout, "//    Data: 23/04/2009\n\n");
-        fprintf(yyout, "#include <stdio.h>\n");
-        fprintf(yyout, "#include <stdlib.h>\n\n");
-        fprintf(yyout, "float var[26] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};\n\n");
+        fprintf(yyout, "#include \"quadruplas.h\"\n\n");
         fprintf(yyout, "int main(void)\n");
     }
     else
-        fprintf(yyout, "Compilador PORTUGOL versao 1.1, by Ruben Carlo Benante.\n");
+        fprintf(yyout, "Compilador PORTUGOL versao 1q, by Ruben Carlo Benante.\n");
 
     if(yyparse()) //falhou
     {
@@ -1951,7 +1949,7 @@ int main(int ac, char **av)
     return 1;
     }
 
-    fprintf(stderr, "\n//    Sucesso! Programa em Portugol compilado.\n\n");
+    //fprintf(stderr, "\n//    Sucesso! Programa em Portugol compilado.\n\n");
     return 0;
 }
 

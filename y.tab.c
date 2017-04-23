@@ -65,7 +65,7 @@
 #line 1 "portugol.y" /* yacc.c:339  */
 
 /*
-    Compilador PORTUGOL v.1.1
+    Compilador PORTUGOL v.1q
     Autor: Ruben Carlo Benante
     Email: benante@gmail.com
     Data: 23/04/2009
@@ -124,9 +124,9 @@ extern int yydebug;
     SE = 258,
     ENTAO = 259,
     SENAO = 260,
-    IMPRIMA = 261,
-    INICIO = 262,
-    FIM = 263,
+    INICIO = 261,
+    FIM = 262,
+    IMPRIMA = 263,
     ID = 264,
     FLUTUANTE = 265,
     OU = 266,
@@ -145,9 +145,9 @@ extern int yydebug;
 #define SE 258
 #define ENTAO 259
 #define SENAO 260
-#define IMPRIMA 261
-#define INICIO 262
-#define FIM 263
+#define INICIO 261
+#define FIM 262
+#define IMPRIMA 263
 #define ID 264
 #define FLUTUANTE 265
 #define OU 266
@@ -498,10 +498,10 @@ static const yytype_uint8 yyrline[] =
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
 {
-  "$end", "error", "$undefined", "SE", "ENTAO", "SENAO", "IMPRIMA",
-  "INICIO", "FIM", "ID", "FLUTUANTE", "OU", "E", "NAO", "GE", "LE", "EQ",
-  "NE", "GT", "LT", "'+'", "'-'", "'*'", "'/'", "UMENOS", "';'", "'='",
-  "'('", "')'", "$accept", "programa", "funcao", "bloco_comandos",
+  "$end", "error", "$undefined", "SE", "ENTAO", "SENAO", "INICIO", "FIM",
+  "IMPRIMA", "ID", "FLUTUANTE", "OU", "E", "NAO", "GE", "LE", "EQ", "NE",
+  "GT", "LT", "'+'", "'-'", "'*'", "'/'", "UMENOS", "';'", "'='", "'('",
+  "')'", "$accept", "programa", "funcao", "bloco_comandos",
   "lista_comandos", "comando", "expr", YY_NULLPTR
 };
 #endif
@@ -531,7 +531,7 @@ static const yytype_uint16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-     -21,     9,     7,   -21,     3,   -21,    24,     5,    26,     8,
+     -21,     9,     8,   -21,     3,   -21,    24,     7,    26,     5,
      -21,   -21,     4,   -21,    26,   -21,   -21,    26,    26,    26,
       70,    26,    12,   -21,    40,   107,   -21,    55,    26,    26,
       26,    26,    26,    26,    26,    26,    26,    26,    26,    26,
@@ -572,9 +572,9 @@ static const yytype_int8 yydefgoto[] =
 static const yytype_uint8 yytable[] =
 {
       23,    24,    38,    39,    25,    26,    27,     7,    41,     3,
-       8,     4,    22,     9,     4,    45,    46,    47,    48,    49,
+       4,    22,     8,     9,     4,    45,    46,    47,    48,    49,
       50,    51,    52,    53,    54,    55,    56,     7,     6,    10,
-       8,     4,    14,     9,    21,    15,    16,    42,    58,    17,
+       4,    21,     8,     9,    14,    15,    16,    42,    58,    17,
       36,    37,    38,    39,    60,     5,    59,    18,    61,    10,
        0,    28,    29,    19,    30,    31,    32,    33,    34,    35,
       36,    37,    38,    39,     0,     0,    28,    29,    43,    30,
@@ -590,9 +590,9 @@ static const yytype_uint8 yytable[] =
 static const yytype_int8 yycheck[] =
 {
       12,    14,    22,    23,    17,    18,    19,     3,    21,     0,
-       6,     7,     8,     9,     7,    28,    29,    30,    31,    32,
+       6,     7,     8,     9,     6,    28,    29,    30,    31,    32,
       33,    34,    35,    36,    37,    38,    39,     3,    25,    25,
-       6,     7,    27,     9,    26,     9,    10,    25,     4,    13,
+       6,    26,     8,     9,    27,     9,    10,    25,     4,    13,
       20,    21,    22,    23,     5,     2,    58,    21,    60,    25,
       -1,    11,    12,    27,    14,    15,    16,    17,    18,    19,
       20,    21,    22,    23,    -1,    -1,    11,    12,    28,    14,
@@ -609,9 +609,9 @@ static const yytype_int8 yycheck[] =
      symbol of state STATE-NUM.  */
 static const yytype_uint8 yystos[] =
 {
-       0,    30,    31,     0,     7,    32,    25,     3,     6,     9,
+       0,    30,    31,     0,     6,    32,    25,     3,     8,     9,
       25,    32,    33,    34,    27,     9,    10,    13,    21,    27,
-      35,    26,     8,    34,    35,    35,    35,    35,    11,    12,
+      35,    26,     7,    34,    35,    35,    35,    35,    11,    12,
       14,    15,    16,    17,    18,    19,    20,    21,    22,    23,
       25,    35,    25,    28,    28,    35,    35,    35,    35,    35,
       35,    35,    35,    35,    35,    35,    35,    25,     4,    34,

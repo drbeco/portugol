@@ -48,9 +48,9 @@ extern int yydebug;
     SE = 258,
     ENTAO = 259,
     SENAO = 260,
-    IMPRIMA = 261,
-    INICIO = 262,
-    FIM = 263,
+    INICIO = 261,
+    FIM = 262,
+    IMPRIMA = 263,
     ID = 264,
     FLUTUANTE = 265,
     OU = 266,
@@ -69,9 +69,9 @@ extern int yydebug;
 #define SE 258
 #define ENTAO 259
 #define SENAO 260
-#define IMPRIMA 261
-#define INICIO 262
-#define FIM 263
+#define INICIO 261
+#define FIM 262
+#define IMPRIMA 263
 #define ID 264
 #define FLUTUANTE 265
 #define OU 266

@@ -1,6 +1,6 @@
 %{
 /*
-    Compilador PORTUGOL v.1.1
+    Compilador PORTUGOL v.1q
     Autor: Ruben Carlo Benante
     Email: benante@gmail.com
     Data: 23/04/2009
@@ -28,7 +28,7 @@ void liberaNodo(tipoNodo *p);
         int varno;      /* yylval.varno tipo do ID */
 }
 
-%token SE ENTAO SENAO IMPRIMA INICIO FIM
+%token SE ENTAO SENAO INICIO FIM IMPRIMA
 %token <varno> ID
 %token <floatval> FLUTUANTE
 
