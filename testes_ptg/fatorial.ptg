@@ -8,27 +8,66 @@
 //#debug _ARVORE
 //#debug _TABELA
 
+// extern printf(int);
+// float nada(void)
+// {
+//   return 1.0;
+// }
+// int main(void)
+// {
+//   nada();
+// }
+
+//externa inteiro printf(texto, inteiro);
+
+real olha(nada)
+inicio;
+    real u;
+    u=5.5;
+    retorne u+1.1;
+fim;
+
+real veja(nada)
+inicio;
+    real m;
+    m=5.5;
+    retorne 1.1+2.2;
+fim;
+
 //comentario
+
+inteiro principal(nada)
 inicio; //inicio
-real n;
-real i;
-real fat;
 
-n=leia();
-fat=1.0;
+    real o;
+    real i;
+    real n;
 
-se(n<0) entao
-        inicio;
+
+    //saia(1);
+    o=2.551;
+    imprima("digite um numero %f\n", o);
+    leia("%f", o);
+    imprima("Num: %f\n", o);
+    o=3.441;
+    imprima("Num: %f\n", o);
+    se(o<0.0) entao
+    inicio;
         imprima("%s\n","erro: numero negativo!");
         saia(1);
-        fim;
-senao se(n==0) entao
+    fim;
+    senao
+        se(o==0.0) entao
         inicio;
-        imprima("%f\n",1.0);
-        saia(0);
+            imprima("%f\n",1.0); // bug! loadd(tc[13] nunca acontece, e a constante 1.0 fica supostamente definida
+            saia(0);
         fim;
-para(i=n; i>1.0; i=i-1.0;)
-        fat=fat*i;
-
-imprima("Fatorial:%.2f\n",fat);
+    para(i=1.0; i<3.0; i=i-1.0) // constante 1.0 faz i ficar indefinido
+    inicio;
+        o=i+i;
+        imprima("i: %f\n", i);
+    fim;
+    imprima("Fatorial: %.2f\n",o);
+    //   r=fat;
+    retorne 1;
 fim;

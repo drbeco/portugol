@@ -45,109 +45,118 @@ extern int yydebug;
 # define YYTOKENTYPE
   enum yytokentype
   {
-    SE = 258,
-    ENTAO = 259,
-    SENAO = 260,
-    INICIO = 261,
-    FIM = 262,
-    ENQUANTO = 263,
-    ABORTE = 264,
-    PARA = 265,
-    INT = 266,
-    REAL = 267,
-    TEXTO = 268,
-    DEFINE = 269,
-    IMPORTE = 270,
-    FUNC = 271,
-    DEBUG = 272,
-    ARVORE = 273,
-    TABELA = 274,
-    INC = 275,
-    DEC = 276,
-    INCPOS = 277,
-    INCPRE = 278,
-    DECPOS = 279,
-    DECPRE = 280,
-    PONT = 281,
-    UPONT = 282,
-    UEND = 283,
-    PONTI = 284,
-    PONTR = 285,
-    PONTS = 286,
-    PATTRIB = 287,
-    IDENT = 288,
-    INTCON = 289,
-    REALCON = 290,
-    TEXTOCON = 291,
-    OU = 292,
-    E = 293,
-    NAO = 294,
-    GE = 295,
-    LE = 296,
-    EQ = 297,
-    NE = 298,
-    GT = 299,
-    LT = 300,
-    UMENOS = 301
+    PRINCIPAL = 258,
+    SE = 259,
+    ENTAO = 260,
+    SENAO = 261,
+    INICIO = 262,
+    FIM = 263,
+    ENQUANTO = 264,
+    ABORTE = 265,
+    PARA = 266,
+    RETORNE = 267,
+    INT = 268,
+    REAL = 269,
+    TEXTO = 270,
+    NADA = 271,
+    FUNCAO = 272,
+    EXTERNA = 273,
+    FUNC = 274,
+    DEFINE = 275,
+    DEBUG = 276,
+    ARVORE = 277,
+    TABELA = 278,
+    INC = 279,
+    DEC = 280,
+    INCPOS = 281,
+    INCPRE = 282,
+    DECPOS = 283,
+    DECPRE = 284,
+    PONT = 285,
+    UPONT = 286,
+    UEND = 287,
+    PATTRIB = 288,
+    PONTI = 289,
+    PONTR = 290,
+    PONTS = 291,
+    IDENT = 292,
+    INTCON = 293,
+    REALCON = 294,
+    TEXTOCON = 295,
+    OU = 296,
+    E = 297,
+    NAO = 298,
+    GE = 299,
+    LE = 300,
+    EQ = 301,
+    NE = 302,
+    GT = 303,
+    LT = 304,
+    UMENOS = 305
   };
 #endif
 /* Tokens.  */
-#define SE 258
-#define ENTAO 259
-#define SENAO 260
-#define INICIO 261
-#define FIM 262
-#define ENQUANTO 263
-#define ABORTE 264
-#define PARA 265
-#define INT 266
-#define REAL 267
-#define TEXTO 268
-#define DEFINE 269
-#define IMPORTE 270
-#define FUNC 271
-#define DEBUG 272
-#define ARVORE 273
-#define TABELA 274
-#define INC 275
-#define DEC 276
-#define INCPOS 277
-#define INCPRE 278
-#define DECPOS 279
-#define DECPRE 280
-#define PONT 281
-#define UPONT 282
-#define UEND 283
-#define PONTI 284
-#define PONTR 285
-#define PONTS 286
-#define PATTRIB 287
-#define IDENT 288
-#define INTCON 289
-#define REALCON 290
-#define TEXTOCON 291
-#define OU 292
-#define E 293
-#define NAO 294
-#define GE 295
-#define LE 296
-#define EQ 297
-#define NE 298
-#define GT 299
-#define LT 300
-#define UMENOS 301
+#define PRINCIPAL 258
+#define SE 259
+#define ENTAO 260
+#define SENAO 261
+#define INICIO 262
+#define FIM 263
+#define ENQUANTO 264
+#define ABORTE 265
+#define PARA 266
+#define RETORNE 267
+#define INT 268
+#define REAL 269
+#define TEXTO 270
+#define NADA 271
+#define FUNCAO 272
+#define EXTERNA 273
+#define FUNC 274
+#define DEFINE 275
+#define DEBUG 276
+#define ARVORE 277
+#define TABELA 278
+#define INC 279
+#define DEC 280
+#define INCPOS 281
+#define INCPRE 282
+#define DECPOS 283
+#define DECPRE 284
+#define PONT 285
+#define UPONT 286
+#define UEND 287
+#define PATTRIB 288
+#define PONTI 289
+#define PONTR 290
+#define PONTS 291
+#define IDENT 292
+#define INTCON 293
+#define REALCON 294
+#define TEXTOCON 295
+#define OU 296
+#define E 297
+#define NAO 298
+#define GE 299
+#define LE 300
+#define EQ 301
+#define NE 302
+#define GT 303
+#define LT 304
+#define UMENOS 305
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 30 "portugol.y" /* yacc.c:1909  */
+#line 32 "portugol.y" /* yacc.c:1909  */
 
         tabelaSimb *pSimb;      /* yylval.pSimb ponteiro para o IDENT na TS */
         nodo *pNodo;            /* tipo do comando e expr */
+        int intval;             /* valor do token para um dado tipo */
 
-#line 151 "y.tab.h" /* yacc.c:1909  */
+#line 160 "y.tab.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

@@ -68,8 +68,8 @@ gcc y.tab.c lex.yy.c $1.c -o $1.bin -lm -ly
 ######################################
 
 echo --- portugol ---------------- ./$1.bin $2.ptg  $2.qdp
-./$1.bin $2.ptg  $2.qdp
+./$1.bin $2.ptg  $2.asm.c
 echo --- gcc --------------------- gcc -x c $2.qdp -o $2.bin -lm
-gcc -x c $2.qdp -o $2.bin -lm
+gcc -x c $2.asm.c -o $2.bin -lm
 echo --- Running! ---------------- ./$2.bin
 ./$2.bin

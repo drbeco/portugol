@@ -1,0 +1,122 @@
+//    Gerado pelo compilador Portugol versao 3r
+//    Autor: Ruben Carlo Benante
+//    Email: rcb@beco.cc
+//    Data: 23/05/2009, 10/03/2011
+//    Compilado em: Mar 14 2011 as 18:52:12
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include "quadruplas.h"
+
+double olha(void)
+{
+  loadd(0.00, NULL, &ts[0]); /* real u; */
+  loadd(5.50,NULL,&tc[0]);
+  mov(tc[0],NULL,&ts[0]); /* u = tc[0] */
+  loadd(1.10,NULL,&tc[1]);
+  add(ts[0],tc[1],&tp[0]);
+  ret(tp[0].dval);
+  nop(NULL,NULL,NULL);	/* no operation */
+} /* close function */
+
+double veja(void)
+{
+  loadd(0.00, NULL, &ts[1]); /* real m; */
+  mov(tc[0],NULL,&ts[1]); /* m = tc[0] */
+  loadd(2.20,NULL,&tc[2]);
+  add(tc[1],tc[2],&tp[1]);
+  ret(tp[1].dval);
+  nop(NULL,NULL,NULL);	/* no operation */
+} /* close function */
+
+int main(void) /* principal */
+{
+  loadfunc(tipoVoid, (void *)printf, "imprima", &tf[0], 2); /* funcao predefinida */
+  loadfunc(tipoVoid, (void *)scanf, "leia", &tf[1], 2); /* funcao predefinida */
+  loadfunc(tipoVoid, (void *)exit, "saia", &tf[2], 1); /* funcao predefinida */
+  loadfunc(tipoDouble, (void *)sqrt, "raiz", &tf[3], 1); /* funcao predefinida */
+  loadfunc(tipoDouble, (void *)olha, "olha", &tf[8], 0); /* definicao de funcao */
+  loadfunc(tipoDouble, (void *)veja, "veja", &tf[9], 0); /* definicao de funcao */
+
+  loadd(0.00, NULL, &ts[2]); /* real o; */
+  loadd(0.00, NULL, &ts[3]); /* real i; */
+  loadd(0.00, NULL, &ts[4]); /* real n; */
+  loadd(2.55,NULL,&tc[3]);
+  mov(tc[3],NULL,&ts[2]); /* o = tc[3] */
+  param(ts[2], NULL, NULL); /* arg2 */
+  loads("digite um numero %f\n",NULL,&tc[4]);
+  param(tc[4], NULL, NULL); /* arg1 */
+  call("imprima", 2, NULL);
+  mov(eax, NULL, &tp[2]);
+  param(ts[2], NULL, NULL); /* arg2 */
+  loads("%f",NULL,&tc[5]);
+  param(tc[5], NULL, NULL); /* arg1 */
+  call("leia", 2, NULL);
+  mov(eax, NULL, &tp[3]);
+  mov(tp[3],NULL,&ts[2]); /* ts[2] = tp[3] */
+  param(ts[2], NULL, NULL); /* arg2 */
+  loads("Num: %f\n",NULL,&tc[6]);
+  param(tc[6], NULL, NULL); /* arg1 */
+  call("imprima", 2, NULL);
+  mov(eax, NULL, &tp[4]);
+  loadd(3.44,NULL,&tc[7]);
+  mov(tc[7],NULL,&ts[2]); /* o = tc[7] */
+  param(ts[2], NULL, NULL); /* arg2 */
+  param(tc[6], NULL, NULL); /* arg1 */
+  call("imprima", 2, NULL);
+  mov(eax, NULL, &tp[5]);
+  loadd(0.00,NULL,&tc[8]);
+  comp_lt(ts[2],tc[8],&tp[6]);
+  jump_f(tp[6],NULL,l1);	/* if(F) goto l1 */
+  loads("erro: numero negativo!",NULL,&tc[10]);
+  param(tc[10], NULL, NULL); /* arg2 */
+  loads("%s\n",NULL,&tc[9]);
+  param(tc[9], NULL, NULL); /* arg1 */
+  call("imprima", 2, NULL);
+  mov(eax, NULL, &tp[7]);
+  loadi(1,NULL,&tc[11]);
+  param(tc[11], NULL, NULL); /* arg1 */
+  call("saia", 1, NULL);
+  mov(eax, NULL, &tp[8]);
+  jump(NULL,NULL,l2);
+l1:	/* else */
+  comp_eq(ts[2],tc[8],&tp[9]);
+  jump_f(tp[9],NULL,l3);	/* if(F) goto l3 */
+  loadd(1.00,NULL,&tc[13]);
+  param(tc[13], NULL, NULL); /* arg2 */
+  loads("%f\n",NULL,&tc[12]);
+  param(tc[12], NULL, NULL); /* arg1 */
+  call("imprima", 2, NULL);
+  mov(eax, NULL, &tp[10]);
+  loadi(0,NULL,&tc[14]);
+  param(tc[14], NULL, NULL); /* arg1 */
+  call("saia", 1, NULL);
+  mov(eax, NULL, &tp[11]);
+l3:	/* endif */
+l2:	/* endif */
+  mov(tc[13],NULL,&ts[3]); /* i = tc[13] */
+l4:	/* for */
+  loadd(3.00,NULL,&tc[15]);
+  comp_lt(ts[3],tc[15],&tp[12]);
+  jump_f(tp[12],NULL,l5);
+  add(ts[3],ts[3],&tp[13]);
+  mov(tp[13],NULL,&ts[2]); /* o = tp[13] */
+  param(ts[3], NULL, NULL); /* arg2 */
+  loads("i: %f\n",NULL,&tc[16]);
+  param(tc[16], NULL, NULL); /* arg1 */
+  call("imprima", 2, NULL);
+  mov(eax, NULL, &tp[14]);
+  sub(ts[3],tc[13],&tp[15]);
+  mov(tp[15],NULL,&ts[3]); /* i = tp[15] */
+  jump(NULL,NULL,l4);
+l5:	/* end_for */
+  param(ts[2], NULL, NULL); /* arg2 */
+  loads("Fatorial: %.2f\n",NULL,&tc[17]);
+  param(tc[17], NULL, NULL); /* arg1 */
+  call("imprima", 2, NULL);
+  mov(eax, NULL, &tp[16]);
+  ret(tc[11].ival);
+  nop(NULL,NULL,NULL);	/* no operation */
+} /* close main */
+

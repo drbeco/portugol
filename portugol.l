@@ -33,23 +33,27 @@ TX ({AS}{TT}*{AS})
 %%
 
  /* comandos reservados */
-inicio   { return INICIO; }    /* { */
-fim      { return FIM; }       /* } */
-se       { return SE; }        /* if */
-entao    { return ENTAO; }     /* then_separator */
-senao    { return SENAO; }     /* else */
-enquanto { return ENQUANTO; }  /* while */
-aborte   { return ABORTE; }    /* exit(1) */
-para     { return PARA; }      /* for */
-int      { return INT; }       /* int */
-real     { return REAL; }      /* float */
-texto    { return TEXTO; }     /*  char* */
-ponteiro { return PONT; }      /* pointer */
-importe  { return IMPORTE; }   /* import double sqrt ( double ) */
-define   { return DEFINE; }    /* define int funcId ( int argId ) */
-#debug   { return DEBUG; }     /* pre-processor directive */
-_ARVORE  { return ARVORE; }    /* turn on print-syntatic-tree option */
-_TABELA  { return TABELA; }    /* turn on print-symbol-table option */
+principal { return PRINCIPAL; } /* main */
+inicio    { return INICIO; }    /* { */
+fim       { return FIM; }       /* } */
+se        { return SE; }        /* if */
+entao     { return ENTAO; }     /* then_separator */
+senao     { return SENAO; }     /* else */
+enquanto  { return ENQUANTO; }  /* while */
+aborte    { return ABORTE; }    /* exit(1) */
+para      { return PARA; }      /* for */
+inteiro   { return INT; }       /* int */
+real      { return REAL; }      /* float */
+texto     { return TEXTO; }     /* char* */
+nada      { return NADA; }      /* void */
+ponteiro  { return PONT; }      /* pointer */
+externa   { return EXTERNA; }   /* externa real sqrt ( real ) */
+define    { return DEFINE; }    /* define uma macro */
+retorne   { return RETORNE; }   /* return */
+#debug    { return DEBUG; }     /* pre-processor directive */
+_ARVORE   { return ARVORE; }    /* turn on print-syntatic-tree option */
+_TABELA   { return TABELA; }    /* turn on print-symbol-table option */
+ /*funcao   { return FUNCAO; }     define uma funcao: tipoRet funcId ( tipoArg1 argId1, tipoArg2 argId2 ) */
 
  /* Pontuacao */
 "++"    { return INC; }
@@ -68,29 +72,35 @@ _TABELA  { return TABELA; }    /* turn on print-symbol-table option */
 
  /* Identificadores */
  /* [a-zA-Z][a-zA-Z0-9_]*      {    tabelaSimb *ps = achaId(yytext); */
-{LE}({LE}|{DI}|_)*          {    tabelaSimb *ps = achaId(yytext);
+
+{LE}({LE}|{DI}|_)*          {   /* identificador: letra pode ser seguida de letra|digito|sublinhado */
+                                tabelaSimb *ps = achaId(yytext);
                                 yylval.pSimb = ps;
                                 return IDENT;
                             }
 
  /* Constantes */
-{DI}+"."{DI}+([eE][+-]?{DI}+)?   {  tabelaSimb *ps = achaFloat(atof(yytext));
+{DI}+"."{DI}+([eE][+-]?{DI}+)?   {  /* double */
+                                    tabelaSimb *ps = achaDouble(atof(yytext));
                                     yylval.pSimb = ps;
                                     return REALCON;
                                  }
 
-{DI}+       {  tabelaSimb *ps = achaInt(atoi(yytext));
+{DI}+       {  /* inteiro */
+               tabelaSimb *ps = achaInt(atoi(yytext));
                yylval.pSimb = ps;
                return INTCON;
             }
 
-{FO}        {  tabelaSimb *ps = achaStr(yytext);
+{FO}        {  /* formato */
+               tabelaSimb *ps = achaStr(yytext);
                yylval.pSimb = ps;
                yylval.pSimb->formatadoSval = 1;
                return TEXTOCON;
             }
 
-{TX}        {  tabelaSimb *ps = achaStr(yytext);
+{TX}        {  /* string */
+               tabelaSimb *ps = achaStr(yytext);
                yylval.pSimb = ps;
                yylval.pSimb->formatadoSval = 0;
                return TEXTOCON;
@@ -146,21 +156,41 @@ int main(int ac, char **av)
         }
     }
     else
-        fprintf(yyout, "Compilador PORTUGOL versao 3q, por Ruben Carlo Benante (25/05/09).\n");
+        fprintf(yyout, "Compilador PORTUGOL versao 3r, por Ruben Carlo Benante (25/05/09, 10/03/11).\n");
 
     //int a=max(2,3);
-    addFuncVoid("imprima", (void *)printf, "printf", 2, tipoIdFuncVoid);  // void printf ( str a , int b );
+
+/* comentato 10/03/11, estava ok esta:
+// void printf ( str a , int b );
+addFuncVoid("imprima", (void *)printf, "printf", 2, tipoIdFuncVoid);
+*/
+
     //** addFuncVoid("leia", (void *)scanf, "scanf", 0, tipoIdFuncDouble);   // void scanf ( float &a ); real leia ( void );
-//**addFuncInt("leia", scanf, "scanf", 0, tipoIdFuncDouble);      // int scanf ( float &a ); real leia ( void );
-addFuncInt2("leia", scanf, "scanf", 0, tipoIdFuncDouble);      // bug2-----------int scanf ( float &a ); real leia ( void );
-//    addFuncVoid("leiaI", (void *)scanf, "scanf", 0);   // void scanf ( float &a ); int leiaI ( void );
-//    addFuncVoid("leiaR", (void *)scanf, "scanf", 0);   // void scanf ( float &a ); real leiaR ( void );
-//    addFuncVoid("leiaT", (void *)scanf, "scanf", 0);   // void scanf ( float &a ); texto leiaT ( void );
-    addFuncVoid("saia", (void *)exit, "exit", 1, tipoIdFuncVoid);        // void exit ( int a );
-    addFuncDouble("raiz", sqrt, "sqrt", 1, tipoIdFuncDouble);              // float sqrt ( float a );
+    //**addFuncInt("leia", scanf, "scanf", 0, tipoIdFuncDouble);      // int scanf ( float &a ); real leia ( void );
+
+/*  comentato 10/03/11:  estava com problemas
+// bug2-----------int scanf ( float &a ); real leia ( void );
+addFuncInt2("leia", scanf, "scanf", 0, tipoIdFuncDouble);
+*/
+
+    //    addFuncVoid("leiaI", (void *)scanf, "scanf", 0);   // void scanf ( float &a ); int leiaI ( void );
+    //    addFuncVoid("leiaR", (void *)scanf, "scanf", 0);   // void scanf ( float &a ); real leiaR ( void );
+    //    addFuncVoid("leiaT", (void *)scanf, "scanf", 0);   // void scanf ( float &a ); texto leiaT ( void );
+
+/*  comentato 10/03/11, estava ok esta:
+// void exit ( int a );
+addFuncVoid("saia", (void *)exit, "exit", 1, tipoIdFuncVoid);
+troquei por retornar inteiro
+*/
+
+//addFunc("saia", (void *)exit, "exit" /*similar em c*/, 1/*num param*/, tipoIdFuncInt /*tipo de retorno e na TS*/, tipoConInt /*tipo arg*/);
+
+/* comentato 10/03/11, estava ok esta:
+addFuncDouble("raiz", sqrt, "sqrt", 1, tipoIdFuncDouble);              // float sqrt ( float a );
     addFuncDouble("exp", exp, "exp", 1, tipoIdFuncDouble);
     addFuncDouble("elevado", pow, "pow", 2, tipoIdFuncDouble);
     addConStr("?");
+*/
     if(yyparse()) //falhou
     {
         fprintf(stderr, "//    Falha! Programa em Portugol nao compilado.\n\n");
@@ -172,25 +202,81 @@ addFuncInt2("leia", scanf, "scanf", 0, tipoIdFuncDouble);      // bug2----------
     return 0;
 }
 
-void addConStr(char *s)
-{
-    tabelaSimb *ps = achaStr(s);
-}
+// void addConStr(char *s)
+// {
+//     tabelaSimb *ps = achaStr(s);
+// }
 
-void addFuncDouble(char *id, double (*func)(), char *idF, int nump, int tp)
+//addFunc("saia", (void *)exit, "exit" /*similar em c*/, 1/*num param*/, tipoIdFuncInt /*tipo de retorno e na TS*/, tipoConInt /*tipo arg*/);
+//adiciona, substitui, ou cria! Criado por achaId
+tabelaSimb *addFunc(char *id, void *func, char *idF /*similar em c*/, int nump, int tret /*tipo retorno e TS*/, int *ta /*tipo arg*/)
 {
+    int i;
     tabelaSimb *ps = achaId(id); //acha ou cria na tabela de simbolos
-    ps->dfunc =  func;
-    ps->idFunc = strdup(idF);
-    ps->numPar = nump;
-    ps->tipoRetNovo = tp;
+    if(tret==tipoIdFuncDouble)
+    {
+      if(func!=NULL)
+        ps->dfunc =  func;
+      ps->tipoD = tipoIdFuncDouble;
+      ps->tipoRetNovo = tipoIdFuncDouble;
+    }
+    else
+      if(tret==tipoIdFuncInt)
+      {
+        if(func!=NULL)
+          ps->ifunc =  func;
+        ps->tipoD = tipoIdFuncInt;
+        ps->tipoRetNovo = tipoIdFuncInt;
+      }
+      else
+        if(tret==tipoIdFuncVoid)
+        {
+          if(func!=NULL)
+            ps->vfunc =  func;
+          ps->tipoD = tipoIdFuncVoid;
+          ps->tipoRetNovo = tipoIdFuncVoid;
+        }
+        else
+          if(tret==tipoIdFuncStr)
+          {
+            if(func!=NULL)
+              ps->sfunc =  func;
+            ps->tipoD = tipoIdFuncStr;
+            ps->tipoRetNovo = tipoIdFuncStr;
+          }
+          else
+          {
+            fprintf(stderr, "//    Falha! Programa em Portugol nao compilado. Tipo de funcao desconhecido.\n\n");
+            exit(1);
+          }
 
-    ps->tipoD = tipoIdFuncDouble;
+    if(idF!=NULL)
+      ps->idFunc = strdup(idF);
+    else
+      ps->idFunc = NULL;
+    ps->numPar = nump;
+    for(i=0; i<nump; i++)
+        ps->tipoParam[i]=ta[i];
     ps->idx = geraTF();
+    return ps;
 }
+
+// void addFuncDouble(char *id, double (*func)(), char *idF, int nump, int tp)
+// {
+//     tabelaSimb *ps = achaId(id); //acha ou cria na tabela de simbolos
+//     ps->dfunc =  func;
+//     ps->idFunc = strdup(idF);
+//     ps->numPar = nump;
+//     ps->tipoRetNovo = tp;
+//
+//     ps->tipoD = tipoIdFuncDouble;
+//     ps->idx = geraTF();
+// }
+
 
 //bug2--------------
 //addFuncInt("leia", (void *)scanf, "scanf", 0, tipoIdFuncDouble);      // int scanf ( float &a ); real leia ( void );
+/* comentato 10/03/11, estava com problemas:
 void addFuncInt2(char *id, int (*func)(const char *, ...), char *idF, int nump, int tp)
 {
     tabelaSimb *ps = achaId(id);
@@ -202,15 +288,16 @@ void addFuncInt2(char *id, int (*func)(const char *, ...), char *idF, int nump, 
     ps->tipoD = tipoIdFuncInt;
     ps->idx = geraTF();
 }
+*/
 
-void addFuncVoid(char *id, void (*func)(), char *idF, int nump, int tp)
-{
-    tabelaSimb *ps = achaId(id); //idName
-    ps->vfunc =  func;
-    ps->idFunc = strdup(idF);
-    ps->numPar = nump;
-    ps->tipoRetNovo = tp;
-
-    ps->tipoD = tipoIdFuncVoid;
-    ps->idx = geraTF();
-}
+// void addFuncVoid(char *id, void (*func)(), char *idF, int nump, int tp)
+// {
+//     tabelaSimb *ps = achaId(id); //idName
+//     ps->vfunc =  func;
+//     ps->idFunc = strdup(idF);
+//     ps->numPar = nump;
+//     ps->tipoRetNovo = tp;
+//
+//     ps->tipoD = tipoIdFuncVoid;
+//     ps->idx = geraTF();
+// }
