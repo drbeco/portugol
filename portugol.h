@@ -1,9 +1,9 @@
 /*
-    Compilador PORTUGOL v.2q
+    Compilador PORTUGOL v.3q
     Autor: Ruben Carlo Benante
     Email: benante@gmail.com
     Data criação: 23/04/2009
-    Data modificação: 24/05/2009
+    Data modificação: 25/05/2009
 */
 
 #define MAX_SIMB 200
@@ -13,33 +13,41 @@
 //char *sTipoDado[14]={"tipoIdIndef", "tipoConInt", "tipoConFloat", "tipoConStr", "tipoIdInt", "tipoIdFloat", "tipoIdStr", "tipoIdFuncInt", "tipoIdFuncFloat", "tipoIdFuncDouble", "tipoIdFuncChar", "tipoIdFuncStr", "tipoIdFuncVoid", "tipoIdFuncPVoid"};
 typedef enum
 {
-    tipoIdIndef,
+    tipoIdUndef,
 
     tipoConInt,
-    tipoConFloat,
+    tipoConDouble,
     tipoConStr,
 
     tipoIdInt,
-    tipoIdFloat,
+    tipoIdDouble,
     tipoIdStr,
+    tipoIdPoint,
+    /*tipoIdPointInt,
+    tipoIdPointFloat,
+    tipoIdPointStr,*/
 
     tipoIdFuncInt,
-    tipoIdFuncFloat,
+    //tipoIdFuncFloat,
     tipoIdFuncDouble,
-    tipoIdFuncChar,
+    //tipoIdFuncChar,
     tipoIdFuncStr,
     tipoIdFuncVoid,
-    tipoIdFuncPVoid,
+    //tipoIdFuncPVoid,
 } tipoDado;
 
 /* Tipos de Base */
 //char *sTipoBase[4]={"tipoIndef", "tipoInt", "tipoFloat", "tipoStr"};
 typedef enum
 {
-    tipoIndef,
+    tipoUndef,
     tipoInt,
-    tipoFloat,
-    tipoStr
+    tipoDouble,
+    tipoStr,
+    tipoPointInt,
+    tipoPointDouble,
+    tipoPointStr,
+    tipoVoid
 } tipoBase;
 
 /* Tipos de Nodos */
@@ -50,21 +58,25 @@ typedef enum
 } tipoNodo;
 
 /* tabela de simbolos */
-typedef struct
+typedef struct uTabela
 {
-      tipoDado tipoD;
-      int idx;              /* ts[idx] ou tf[idx]*/
+      tipoDado tipoD;       //tipo do dado ou retorno da funcao
+      tipoDado tipoRetNovo; //tipo de retorno da funcao portugol caso nao coincida com o tipo definido em C
+      int idx;              // bug: tf tambem! ts[idx] ou tc[idx]. Para tf[], se acha o idx em um laco de busca, pelo nome
       int uso;              //verdadeiro se ja usou
       char *idNome;         //nome da variavel ou funcao em Portugol
       char *idFunc;         //nome da funcao em C
+      int numPar;           //numero de parametros da funcao
       int ival;             //valor da constante inteira
-      float fval;           //valor da constante real
+      float dval;           //valor da constante real
       char sval[MAX_SVAL];  //valor da constante texto
-      int (*ifunc)();      //ponteiro para funcao que retorna inteiro
-      float (*ffunc)();    //ponteiro para funcao que retorna double
-      double (*dfunc)();   //ponteiro para funcao que retorna double
-      char *(*sfunc)();    //ponteiro para funcao que retorna ponteiro para char
-      void (*vfunc)();     //ponteiro para a funcao que retorna void
+      int formatadoSval;    //verdadeiro se sval serve para formato do printf
+      int (*ifunc)();       //ponteiro para funcao que retorna inteiro
+      //int (*i2func)(const char *, ...);            //bug2------ponteiro para funcao que retorna inteiro
+      //float (*ffunc)();     //ponteiro para funcao que retorna double
+      double (*dfunc)();    //ponteiro para funcao que retorna double
+      char *(*sfunc)();     //ponteiro para funcao que retorna ponteiro para char
+      void (*vfunc)();      //ponteiro para a funcao que retorna void
 } tabelaSimb;
 
 /* operadores */
@@ -86,9 +98,10 @@ typedef struct uNodo
 } nodo;
 
 tabelaSimb tabSimb[MAX_SIMB];
+tabelaSimb *achaIdx(int i);
 tabelaSimb *achaId(char *nome);
 tabelaSimb *achaInt(int iv);
-tabelaSimb *achaFloat(float fv);
+tabelaSimb *achaDouble(float dv);
 tabelaSimb *achaStr(char *sv);
 tabelaSimb *achaFuncs(tabelaSimb *ultima);
 
@@ -96,13 +109,18 @@ extern FILE *yyin, *yyout;
 extern FILE *fhead;
 char *geraLB(int *i);
 char *geraTP(int *i);
-int geraTF(void); //tabela de funcoes
+//int geraTF(void); //tabela de funcoes
 int geraTC(void); //tabela de constantes
 int geraTS(void); //tabela de variaveis
 char *nomeTipo(nodo *p); //retorna o nome do tipoDado ou tipoBase
+int variavelT(int t);
+int variavel(nodo *p);
+int ponteiro(nodo *p);
 
-void addFuncDouble(char *id, double (*func)(), char *idF);
-void addFuncVoid(char *id, void (*func)(), char *idF);
+void addFuncInt(char *id, int (*func)(), char *idF, int nump, int tp);
+void addFuncDouble(char *id, double (*func)(), char *idF, int nump, int tiporet); //normalmente tiporet==nome da funcao (FuncDouble)
+void addFuncVoid(char *id, void (*func)(), char *idF, int nump, int tiporet); //normalmente tiporet==nome da funcao (FuncVoid)
+//void addFuncInt2(char *id, int (*func)(const char *, ...), char *idF, int nump, int tp);
 void addConStr(char *s);
 void yyerror(char *s);
 extern int lineno;
@@ -110,6 +128,7 @@ extern int lineno;
 void printNodo(nodo *tn, int n, char *var);
 void printTS(void);
 int pegaTipoBase(nodo *p);
+int pegaTipoBaseT(int t);
 void erroSemantico(char *s, int linha);
 
 nodo *opr(int oper, int nops, ...);

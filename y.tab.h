@@ -50,35 +50,45 @@ extern int yydebug;
     SENAO = 260,
     INICIO = 261,
     FIM = 262,
-    IMPRIMA = 263,
-    LEIA = 264,
-    ENQUANTO = 265,
-    ABORTE = 266,
-    SAIA = 267,
-    PARA = 268,
-    INT = 269,
-    REAL = 270,
-    TEXTO = 271,
-    DEFINE = 272,
-    IMPORTE = 273,
-    FUNC = 274,
-    DEBUG = 275,
-    ARVORE = 276,
-    TABELA = 277,
-    IDENT = 278,
-    INTCON = 279,
-    REALCON = 280,
-    TEXTOCON = 281,
-    OU = 282,
-    E = 283,
-    NAO = 284,
-    GE = 285,
-    LE = 286,
-    EQ = 287,
-    NE = 288,
-    GT = 289,
-    LT = 290,
-    UMENOS = 291
+    ENQUANTO = 263,
+    ABORTE = 264,
+    PARA = 265,
+    INT = 266,
+    REAL = 267,
+    TEXTO = 268,
+    DEFINE = 269,
+    IMPORTE = 270,
+    FUNC = 271,
+    DEBUG = 272,
+    ARVORE = 273,
+    TABELA = 274,
+    INC = 275,
+    DEC = 276,
+    INCPOS = 277,
+    INCPRE = 278,
+    DECPOS = 279,
+    DECPRE = 280,
+    PONT = 281,
+    UPONT = 282,
+    UEND = 283,
+    PONTI = 284,
+    PONTR = 285,
+    PONTS = 286,
+    PATTRIB = 287,
+    IDENT = 288,
+    INTCON = 289,
+    REALCON = 290,
+    TEXTOCON = 291,
+    OU = 292,
+    E = 293,
+    NAO = 294,
+    GE = 295,
+    LE = 296,
+    EQ = 297,
+    NE = 298,
+    GT = 299,
+    LT = 300,
+    UMENOS = 301
   };
 #endif
 /* Tokens.  */
@@ -87,47 +97,57 @@ extern int yydebug;
 #define SENAO 260
 #define INICIO 261
 #define FIM 262
-#define IMPRIMA 263
-#define LEIA 264
-#define ENQUANTO 265
-#define ABORTE 266
-#define SAIA 267
-#define PARA 268
-#define INT 269
-#define REAL 270
-#define TEXTO 271
-#define DEFINE 272
-#define IMPORTE 273
-#define FUNC 274
-#define DEBUG 275
-#define ARVORE 276
-#define TABELA 277
-#define IDENT 278
-#define INTCON 279
-#define REALCON 280
-#define TEXTOCON 281
-#define OU 282
-#define E 283
-#define NAO 284
-#define GE 285
-#define LE 286
-#define EQ 287
-#define NE 288
-#define GT 289
-#define LT 290
-#define UMENOS 291
+#define ENQUANTO 263
+#define ABORTE 264
+#define PARA 265
+#define INT 266
+#define REAL 267
+#define TEXTO 268
+#define DEFINE 269
+#define IMPORTE 270
+#define FUNC 271
+#define DEBUG 272
+#define ARVORE 273
+#define TABELA 274
+#define INC 275
+#define DEC 276
+#define INCPOS 277
+#define INCPRE 278
+#define DECPOS 279
+#define DECPRE 280
+#define PONT 281
+#define UPONT 282
+#define UEND 283
+#define PONTI 284
+#define PONTR 285
+#define PONTS 286
+#define PATTRIB 287
+#define IDENT 288
+#define INTCON 289
+#define REALCON 290
+#define TEXTOCON 291
+#define OU 292
+#define E 293
+#define NAO 294
+#define GE 295
+#define LE 296
+#define EQ 297
+#define NE 298
+#define GT 299
+#define LT 300
+#define UMENOS 301
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 28 "portugol.y" /* yacc.c:1909  */
+#line 30 "portugol.y" /* yacc.c:1909  */
 
         tabelaSimb *pSimb;      /* yylval.pSimb ponteiro para o IDENT na TS */
         nodo *pNodo;            /* tipo do comando e expr */
 
-#line 131 "y.tab.h" /* yacc.c:1909  */
+#line 151 "y.tab.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

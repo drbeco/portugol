@@ -1,29 +1,32 @@
 #!/bin/bash
-# Compila com Portugol v2q e gera .asm.c e .asm.bin
+# Compila com Portugol e gera .qdp e .bin
 #/*
 #    Autor: Ruben Carlo Benante
 #    Email: benante@gmail.com
 #    Data: 23/04/2009
+#    Modificado: 25/05/2009
+#    Versao: Portugol v3q
 #*/
 #
 # Exemplo:
-# ./ptg-v1q.sh teste1
+# ./ptg-qdp.sh teste1
 #
-# entrada:
-#          teste1.ptg
-#          arquivo em linguagem portugol
+# inicia os seguintes processos:
+#      portugol.bin teste.ptg teste.qdp                  (gera teste.qdp)
+#      gcc -x c teste.qdp -o teste.bin -lm               (gera teste.bin)
 #
-# saida:
-#        teste1.asm.c
-#        arquivo em quadruplas
+#entrada:
+#           teste1 (arquivo em linguagem portugol extensão .ptg)
 #
-#        teste1.asm.bin
-#        arquivo executavel
+#saida:
+#           teste1.qdp (arquivo em linguagem de quadruplas .qdp)
+#           teste1.bin (arquivo executavel)
+#
+######################################
 
-echo portugol $1.ptg $1.asm.c
-./portugol-v2q.bin $1.ptg $1.asm.c
-echo gcc $1.asm.c -o $1.asm.bin
-gcc $1.asm.c -o $1.asm.bin
-echo ./$1.asm.bin
-./$1.asm.bin
-
+echo --- portugol ---------------- ./portugol.bin $1.ptg  $1.qdp
+./portugol.bin $1.ptg  $1.qdp
+echo --- gcc --------------------- gcc $1.qdp -o $1.bin -lm
+gcc $1.qdp -o $1.bin -lm
+echo --- Running! ---------------- ./$1.bin
+./$1.bin

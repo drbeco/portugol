@@ -1,8 +1,8 @@
-//    Compilador PORTUGOL versao 2q
+//    Compilador PORTUGOL versao 3q
 //    Autor: Ruben Carlo Benante
 //    Email: benante@gmail.com
 //    Data: 23/04/2009
-//    Modificado: 24/05/2009
+//    Modificado: 25/05/2009
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,7 +20,8 @@ typedef enum
     tipoIndef,
     tipoInt,
     tipoFloat,
-    tipoStr
+    tipoStr,
+    tipoVoid
 } tipoBase;
 
 typedef enum
@@ -72,6 +73,25 @@ void halt(superTipo  *nul1, superTipo  *nul2, superTipo  *nul3);   // abort with
 void loadi(int i,   int *nul1,   superTipo *tn);// { tn->tipo=tipoIntInt; tn->ival=i; }
 void loadf(float f, float *nul1, superTipo *tn);// { tn->tipo=tipoIntFloat; tn->fval=f; }
 void loads(char *s, char *nul1,  superTipo *tn);// { tn->tipo=tipoIntStr; strcpy(tn->sval,s); }
+//apenas 0 ou 1 parametro:
+//loadfuncd("sqrt", tipoInt,  sqrt);
+//void loadfuncd(char *nome, int tipoArg0,  double (*df)());
+// completa:
+//loadfuncd("sqrt", nPar, tipoPar,  sqrt);
+//void loadfunci(char *nome, int tipoArg[MAX_PARAM],  int (*if)());
+//void loadfuncp(char *nome, int tipoArg[MAX_PARAM],  void *(*pf)());
+//void loadfunc(char *nome, int tipoRet,  void *(*pfunc)());
+//{
+//   static int idx=-1;
+//   idx++;
+//   tf[idx].tipo=tipo;
+//   if(tipo==tipoIdFuncInt)
+//     tf[idx].ifunc=(int)pfunc;
+//   else
+//     tf[idx].vfptr=(void *)pfunc;
+//   tf[idx].nomeId=malloc(strlen(nome)+1);
+//   strcpy(tf[idx].idName, nome);
+// }
 
 void mov(superTipo q1, superTipo *nul1, superTipo *qres);               //qres=q1;
 
@@ -173,7 +193,7 @@ void mov(superTipo q1, superTipo *nul1, superTipo *qres)
         qres->ival=q1.ival;
     else if(q1.tipo==tipoFloat)
         qres->fval=q1.fval;
-    else if(q1.tipo==tipoStr)
+    else if(q1.tipo=tipoStr)
         strcpy(qres->sval, q1.sval);
     else
     {
@@ -650,30 +670,82 @@ void call(char *q1, int i, superTipo  *qres)
     switch(idx)
     {
         case 0: //printf
-            if(g[0]->tipo==tipoStr)
-                (*tf[idx].vfunc)("%s\n", g[0]->sval); //printf("%s\n",sval);
-            else if(g[0]->tipo==tipoInt)
-                (*tf[idx].vfunc)("%d\n", g[0]->ival); //printf("%d\n",ival);
-            else /* tipoFloat */
-                (*tf[idx].vfunc)("%.2f\n", g[0]->fval); //printf("%.2f\n",fval);
+            if(g[0]->tipo!=tipoStr)
+            {
+                fprintf(stderr, "ASM Error: function printf needs tipoStr as first arg.\n");
+                exit(1);
+            }
+            if(g[1]->tipo==tipoStr)
+                (*tf[idx].vfunc)(g[0]->sval, g[1]->sval); //printf("%s\n",sval);
+            else if(g[1]->tipo==tipoInt)
+                (*tf[idx].vfunc)(g[0]->sval, g[1]->ival); //printf("%d\n",ival);
+            else // tipoFloat
+                (*tf[idx].vfunc)(g[0]->sval, g[1]->fval); //printf("%.2f\n",fval);
             break;
         case 1: //scanf
+            if(i!=0)
+            {
+                fprintf(stderr, "ASM Error: function scanf cannot take any args.\n");
+                exit(1);
+            }
             (*tf[idx].vfunc)("%f", &qres->fval); //scanf("%f",&ts[1]);
             qres->tipo=tipoFloat;
             break;
         case 2: //exit
-            (*tf[idx].vfunc)(g[0]->ival); //exit(ival)
+            if(g[0]->tipo==tipoStr)
+            {
+                fprintf(stderr, "ASM Error: function exit cannot take <tipoStr> as arg.\n");
+                exit(1);
+            }
+            else if(g[0]->tipo==tipoInt)
+                (*tf[idx].vfunc)(g[0]->ival); //exit(ival)
+            else /* tipoFloat */
+                (*tf[idx].vfunc)((int)g[0]->fval); //exit(ival)
             break;
         case 3: //sqrt
-            qres->fval=(*tf[idx].dfunc)(g[0]->fval); //sqrt(fval)
+            if(g[0]->tipo==tipoStr)
+            {
+                fprintf(stderr, "ASM Error: function sqrt cannot take <tipoStr> as arg.\n");
+                exit(1);
+            }
+            else if(g[0]->tipo==tipoInt)
+                qres->fval=(*tf[idx].dfunc)((float)g[0]->ival); //sqrt((float)ival)
+            else /* tipoFloat */
+                qres->fval=(*tf[idx].dfunc)(g[0]->fval); //sqrt(fval)
             qres->tipo=tipoFloat;
             break;
         case 4: //exp
-            qres->fval=(*tf[idx].dfunc)(g[0]->fval); //sqrt(fval)
+            if(g[0]->tipo==tipoStr)
+            {
+                fprintf(stderr, "ASM Error: function exp cannot take <tipoStr> as arg.\n");
+                exit(1);
+            }
+            else if(g[0]->tipo==tipoInt)
+                qres->fval=(*tf[idx].dfunc)((float)g[0]->ival); //exp((float)ival)
+            else /* tipoFloat */
+                qres->fval=(*tf[idx].dfunc)(g[0]->fval); //exp(fval)
             qres->tipo=tipoFloat;
             break;
+        case 5: //pow
+            if(g[0]->tipo==tipoStr || g[1]->tipo==tipoStr)
+            {
+                fprintf(stderr, "ASM Error: function pow cannot take <tipoStr> as arg.\n");
+                exit(1);
+            }
+            qres->tipo=tipoFloat;
+            if(g[0]->tipo==tipoInt)
+                if(g[1]->tipo==tipoInt)
+                    qres->fval=(*tf[idx].dfunc)((float)g[0]->ival, (float)g[1]->ival); //exp((float)ival)
+                else /* g[1]==tipoFloat */
+                    qres->fval=(*tf[idx].dfunc)((float)g[0]->ival, g[1]->fval); //exp((float)ival)
+            else /* g[0]==tipoFloat */
+                if(g[1]->tipo==tipoInt)
+                    qres->fval=(*tf[idx].dfunc)(g[0]->fval, (float)g[1]->ival); //exp((float)ival)
+                else /* g[1]==tipoFloat */
+                    qres->fval=(*tf[idx].dfunc)(g[0]->fval, g[1]->fval); //exp((float)ival)
+            break;
         default:
-            fprintf(stderr, "ASM Error: function not in tf[] table. (default switch)\n");
+            fprintf(stderr, "ASM Error: function %s not in tf[] table. (default switch)\n", q1);
             exit(1);
     }
 }

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE language SYSTEM "language.dtd"
+[
+        <!ENTITY identificador  "[a-zA-Z][a-zA-Z0-9_]*">
+        <!ENTITY real "[0-9]+\.[0-9]+([eE][+-]?[0-9]+)?">
+        <!ENTITY inteiro "[0-9]+">
+        <!-- ENTITY texto "\"[^"\n]*\"" -->
+]>
+
+<language name="Portugol" version="3.0" kateversion="2.5.10" section="Sources" extensions="*.ptg;*.PTG" mimetype="text/x-portugol-src" priority="5" author="Ruben Carlo Benante (dr.beco@gmail.com)" license="GNU/GPL">
+  <highlighting>
+    <list name="comandos">
+      <item> inicio </item>
+      <item> fim </item>
+      <item> se </item>
+      <item> entao </item>
+      <item> senao </item>
+      <item> enquanto </item>
+      <item> aborte </item>
+      <item> para </item>
+      <!-- item> int </item -->
+      <!-- item> real </item -->
+      <!-- item> texto </item -->
+      <item> importe </item>
+      <item> define </item>
+    </list>
+    <list name="macros">
+      <item> #debug </item>
+      <!-- item> _ARVORE </item -->
+      <!-- item> _TABELA </item -->
+    </list>
+    <list name="tipos">
+      <item> int </item>
+      <item> real </item>
+      <item> texto </item>
+    </list>
+    <list name="operadores">
+         <item> = </item>
+         <item> >= </item>
+         <item> <= </item>
+         <item> == </item>
+         <item> != </item>
+         <item> > </item>
+         <item> < </item>
+         <item> e </item>
+         <item> ou </item>
+         <item> nao </item>
+         <item> - </item>
+         <item> + </item>
+         <item> * </item>
+         <item> / </item>
+         <item> % </item>
+         <!-- item> ( </item -->
+         <!-- item> ) </item -->
+         <!-- item> ; </item -->
+    </list>
+    <list name="funcoes">
+         <item>imprima</item>
+         <item>leia</item>
+         <item>saia</item>
+         <item>raiz</item>
+         <item>exp</item>
+    </list>
+    <contexts>
+        <context attribute="Normal" name="default" lineEndContext="#stay">
+            <keyword attribute="Comandos" context="#stay" String="comandos" />
+            <keyword attribute="Tipos" context="#stay" String="tipos" />
+            <keyword attribute="Operadores" context="#stay" String="operadores" />
+            <keyword attribute="Funcoes" context="#stay" String="funcoes" />
+        </context>
+        <context attribute="Cadeia" lineEndContext="#stay" name="string" >
+            <DetectChar attribute="Cadeia" context="#pop" char="&quot;" />
+        </context>
+        <context attribute="Macro" lineEndContext="#stay" name="macro" >
+            <DetectChar attribute="Macro" context="macro" char="#" firstNonSpace="true" />
+        </context>
+        <context attribute="Comentarios" lineEndContext="#stay" name="comentarios" >
+            <RegExpr attribute="Comentarios" context="0" String="/" />
+        </context>
+    </contexts>
+    <itemDatas>
+      <itemData name="Normal" defStyleNum="dsNormal"/>
+      <itemData name="Keyword"  defStyleNum="dsKeyword"/>
+      <itemData name="Operator" defStyleNum="dsNormal" color="#880000" selColor="#ffffff" bold="1" italic="0"/>
+      <itemData name="Function" defStyleNum="dsFunction" color="#000080" selColor="#ffffff" bold="1" italic="0"/>
+      <itemData name="Type"     defStyleNum="dsDataType"  color="#000080" selColor="#ffffff" bold="1" italic="0"/>
+      <itemData name="Directives" defStyleNum="dsDataType"  color="#000080" selColor="#ffffff" bold="1" italic="0"/>
+      <itemData name="Comment"  defStyleNum="dsComment"  color="#000080" selColor="#ffffff" bold="1" italic="0"/>
+    </itemDatas>
+  </highlighting>
+  <general>
+    <comments>
+      <comment name="singleLine" start="//" />
+      <!-- comment name="multiLine" start="/*" end="*/" / -->
+    </comments>
+    <keywords casesensitive="1" />
+  </general>
+</language>

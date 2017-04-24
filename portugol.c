@@ -1,5 +1,5 @@
 /*
-    Compilador PORTUGOL v.2q
+    Compilador PORTUGOL v.3q
     Autor: Ruben Carlo Benante
     Email: benante@gmail.com
     Data criação: 23/04/2009
@@ -16,16 +16,20 @@
 #include "portugol.h"
 #include "y.tab.h"
 
-char *sTipoDado[14]={"tipoIdIndef", "tipoConInt", "tipoConFloat", "tipoConStr", "tipoIdInt", "tipoIdFloat", "tipoIdStr", "tipoIdFuncInt", "tipoIdFuncFloat", "tipoIdFuncDouble", "tipoIdFuncChar", "tipoIdFuncStr", "tipoIdFuncVoid", "tipoIdFuncPVoid"};
-char *sTipoBase[4]={"tipoIndef", "tipoInt", "tipoFloat", "tipoStr"};
+#define debug 0
+
+char *sTipoDado[17]={"tipoIdUndef", "tipoConInt", "tipoConDouble", "tipoConStr", "tipoIdInt", "tipoIdDouble", "tipoIdStr", "tipoIdPointInt", "tipoIdPointDouble", "tipoIdPointStr", "tipoIdFuncInt", "tipoIdFuncDouble", "tipoIdFuncDouble", "tipoIdFuncChar", "tipoIdFuncStr", "tipoIdFuncVoid", "tipoIdFuncPVoid"};
+//char *sTipoBase[8]={"tipoUndef", "tipoInt", "tipoDouble", "tipoStr", "tipoPointInt", "tipoPointDouble", "tipoPointStr", "tipoVoid"};
+char *sTipoBase[5]={"tipoUndef", "tipoInt", "tipoDouble", "tipoStr", "tipoVoid"};
 extern int debugArvore;
 extern int debugTabela;
 
 char *gera_quad(nodo *tn, int n)
 {
-    char *q1=NULL, *q2=NULL, *q3=NULL, *qres=NULL, qtemp[20]="";
+    char *q1=NULL, *q2=NULL, *q3=NULL, *qres=NULL, qtemp[20]="", qtemp2[20];
     char msg[128];
-    int itemp, t0, t1;
+    int itemp, t1, t2, t3;
+    tabelaSimb *ps;
 
     if(tn==NULL)
         return strdup(qtemp);
@@ -36,12 +40,14 @@ char *gera_quad(nodo *tn, int n)
             switch(tn->pSimb->tipoD)
             {
                 case tipoConInt:
+                    //if(debug) printf("debug tipoConInt\n");
                     sprintf(qtemp,"tc[%d]",tn->pSimb->idx); //achaId preenche idx
                     if(!tn->pSimb->uso)
                         fprintf(yyout, "  loadi(%d,%s,&%s);\n", tn->pSimb->ival, "NULL", qtemp);
                     tn->pSimb->uso=1;
                     break;
-                case tipoConFloat:
+                case tipoConDouble:
+                    //if(debug) printf("debug tipoConDouble\n");
                     sprintf(qtemp,"tc[%d]",tn->pSimb->idx);
                     if(!tn->pSimb->uso)
                         fprintf(yyout, "  loadf(%.2f,%s,&%s);\n", tn->pSimb->fval, "NULL", qtemp);
@@ -54,29 +60,42 @@ char *gera_quad(nodo *tn, int n)
                     tn->pSimb->uso=1;
                     break;
                 case tipoIdInt:
-                case tipoIdFloat:
+                case tipoIdDouble:
                 case tipoIdStr:
+                case tipoIdPointInt:
+                case tipoIdPointDouble:
+                case tipoIdPointStr:
                     sprintf(qtemp,"ts[%d]",tn->pSimb->idx);
                     break;
-                case tipoIdIndef:
-                default: //funcao?
+                case tipoIdFuncInt:
+                //case tipoIdFuncFloat:
+                case tipoIdFuncDouble:
+                case tipoIdFuncChar:
+                case tipoIdFuncStr:
+                case tipoIdFuncVoid:
+                case tipoIdFuncPVoid:
+                    sprintf(qtemp,"tf[%d]",tn->pSimb->idx);
+                    break;
+                case tipoIdUndef:
+                default:
                     sprintf(qtemp,"ts[?]");
+                    sprintf(msg,"Operando nao declarado na chamada da funcao <%s>.", tn->opr.ptn[0]->pSimb->idNome);
+                    erroSemantico(msg, tn->linha);
                     break;
             }
         case tipoOper:
             switch(tn->opr.oper)
             {
                 case INICIO: //INICIO; comandos FIM;
+                    gera_quad(tn->opr.ptn[0], n+1);
                     if(n==0)
                     {
                         if(debugTabela)
                             printTS();
                         if(debugArvore)
                             printNodo(tn,0,"tn");
+                        fprintf(yyout, "  nop(NULL,NULL,NULL);\t/* no operation */\n}\n");
                     }
-                    gera_quad(tn->opr.ptn[0], n+1);
-                    if(n==0)
-                        fprintf(yyout, "}\n");
                     break;
                 case SE:
                     q1=gera_quad(tn->opr.ptn[0], n+1); //expr
@@ -101,27 +120,6 @@ char *gera_quad(nodo *tn, int n)
                     else //nao tem senao
                         fprintf(yyout, "%s:\t/* endif */\n", q2);//fim_se:
                     break;
-                case IMPRIMA:
-                    q1=gera_quad(tn->opr.ptn[0], n+1); //ts, tp ou tc;
-                    fprintf(yyout, "  param(%s,NULL,NULL);\n", q1); //string ts[0], tc[0] ou tp[0]
-                    fprintf(yyout, "  call(\"imprima\",1,NULL);\n");
-                    break;
-                case LEIA:
-                    qres=gera_quad(tn->opr.ptn[0], n+1);
-                    if(tn->opr.ptn[0]->pSimb->tipoD!=tipoIdFloat)
-                    {
-                        sprintf(msg,"Chamada da funcao leia <tipoIdFloat> com argumento de tipo incorreto. leia <%s>.", nomeTipo(tn->opr.ptn[0]));
-                        erroSemantico(msg, tn->linha);
-                    }
-                    tabelaSimb *ps = achaStr("?");
-                    sprintf(qtemp,"tc[%d]",ps->idx);
-                    if(!ps->uso)
-                        fprintf(yyout, "  loads(\"?\",NULL,&%s);\n", qtemp);
-                    ps->uso=1;
-                    fprintf(yyout, "  param(%s,NULL,NULL);\n", qtemp);
-                    fprintf(yyout, "  call(\"imprima\",1,NULL);\n");
-                    fprintf(yyout, "  call(\"leia\",0,&%s);\n", qres);
-                    break;
                 case ENQUANTO:
                     q1=geraLB(&itemp); // inicio_enquanto
                     q2=geraLB(&itemp); // fim_enquanto
@@ -144,35 +142,70 @@ char *gera_quad(nodo *tn, int n)
                     fprintf(yyout, "  jump(NULL,NULL,%s);\n",q1);//pula para loop_para
                     fprintf(yyout, "%s:\t/* end_for */\n", q2);//fim_para:
                     break;
-                case FUNC: // | IDENT '(' expr ')'  { $$ = opr(FUNC, 2, $1, $3); }
-                    q1=gera_quad(tn->opr.ptn[0], n+1);
-                    q2=gera_quad(tn->opr.ptn[1], n+1);
-                    qres=geraTP(&itemp);
-                    t0=pegaTipoBase(tn->opr.ptn[0]); //tipoInt, tipoFloat, tipoStr, tipoIndef
-                    t1=pegaTipoBase(tn->opr.ptn[1]); //tipoInt, tipoFloat, tipoStr, tipoIndef
-                    if(t1 == tipoIndef)
+                case FUNC:
+                    //if(debug) printf("debug FUNC\n");
+                    //    IDENT '(' ')'                       { $$ = opr(FUNC, 1, conv($1)); }
+                    //    | IDENT '(' expr ')'                { $$ = opr(FUNC, 2, conv($1), $3); }
+                    //    | IDENT '(' expr ',' expr ')'       { $$ = opr(FUNC, 3, conv($1), $3, $5); }
+                    q1=gera_quad(tn->opr.ptn[0], n+1); //IDENT ts[?]
+                    qres=geraTP(&itemp);//retorno da funcao em um temporario
+                    if(tn->opr.ptn[0]->pSimb->numPar != tn->opr.nops-1)
                     {
-                        sprintf(msg,"Operando nao declarado na chamada da funcao <%s>.", tn->opr.ptn[0]->pSimb->idNome);
+                        sprintf(msg,"Numero de parametros declarados (%d) nao coincide com usados (%d) na chamada da funcao <%s>.", tn->opr.ptn[0]->pSimb->numPar, tn->opr.nops-1, tn->opr.ptn[0]->pSimb->idNome);
                         erroSemantico(msg, tn->linha);
                     }
-                    if(t1 == tipoStr)
+                    switch(tn->opr.ptn[0]->pSimb->numPar) //ou tn->opr.nops
                     {
-                        sprintf(msg,"Funcao <%s> com argumento tipoStr nao implementada.", tn->opr.ptn[0]->pSimb->idNome);
-                        erroSemantico(msg, tn->linha);
+                        case 2:
+                            if(!strcmp(tn->opr.ptn[0]->pSimb->idNome,"imprima")) //se imprima
+                                if(!tn->opr.ptn[1]->pSimb->formatadoSval)
+                                {
+                                    sprintf(msg,"Formato incorreto para a funcao imprima(\"formato\", expr).");
+                                    erroSemantico(msg, tn->linha);
+                                }
+                            q3=gera_quad(tn->opr.ptn[2], n+1); //arg2 == $5
+                            t3=pegaTipoBase(tn->opr.ptn[2]); //tipo do arg2: tipoInt, tipoDouble, tipoStr, tipoUndef
+                            fprintf(yyout,"  param(%s, NULL, NULL); /* arg2 */\n", q3);
+                            if(t3 == tipoUndef)
+                            {
+                                sprintf(msg,"Operando nao declarado na chamada da funcao <%s>.", tn->opr.ptn[0]->pSimb->idNome);
+                                erroSemantico(msg, tn->linha);
+                            }
+/*                            if(t3 == tipoStr)
+                            {
+                                sprintf(msg,"Funcao <%s> com argumento tipoStr nao implementada.", tn->opr.ptn[0]->pSimb->idNome);
+                                erroSemantico(msg, tn->linha);
+                            }*/
+                        case 1:
+                            q2=gera_quad(tn->opr.ptn[1], n+1); //arg1 == $3
+                            t2=pegaTipoBase(tn->opr.ptn[1]); //tipo do arg1: tipoInt, tipoDouble, tipoStr, tipoUndef
+                            fprintf(yyout,"  param(%s, NULL, NULL); /* arg1 */\n", q2);
+                            if(t2 == tipoUndef)
+                            {
+                                sprintf(msg,"Operando nao declarado na chamada da funcao <%s>.", tn->opr.ptn[0]->pSimb->idNome);
+                                erroSemantico(msg, tn->linha);
+                            }
+/*                            if(t2 == tipoStr)
+                            {
+                                sprintf(msg,"Funcao <%s> com argumento tipoStr nao implementada.", tn->opr.ptn[0]->pSimb->idNome);
+                                erroSemantico(msg, tn->linha);
+                            }*/
+                        case 0:
+                            break;
+                        default:
+                        {
+                            sprintf(msg,"Funcao <%s> possui argumentos demais.", tn->opr.ptn[0]->pSimb->idNome);
+                            erroSemantico(msg, tn->linha);
+                        }
                     }
-                    tn->opr.tipoBOper = tipoFloat;//bug: esta fixo! De onde vem o tipo de retorno?
-                    fprintf(yyout,"  param(%s, NULL, NULL);\n  call(\"%s\", 1, &%s);\n", q2, tn->opr.ptn[0]->pSimb->idNome, qres);
+                    tn->opr.tipoBOper = pegaTipoBaseT(tn->opr.ptn[0]->pSimb->tipoRetNovo);//bug: esta fixo! De onde vem o tipo
+                    fprintf(yyout,"  call(\"%s\", %d, &%s);\n", tn->opr.ptn[0]->pSimb->idNome, tn->opr.ptn[0]->pSimb->numPar, qres);
                     break;
                 case ABORTE:
                     fprintf(yyout, "  halt(NULL,NULL,NULL);\n");
                     break;
-                case SAIA:
-                    q1=gera_quad(tn->opr.ptn[0], n+1);
-                    fprintf(yyout, "  param(%s,%s,%s);\n",q1,"NULL","NULL");
-                    fprintf(yyout, "  call(%s,%s,%s);\n","\"saia\"","1","NULL");
-                    break;
                 case INT:
-                    if(tn->opr.ptn[0]->pSimb->tipoD!=tipoIdIndef)
+                    if(tn->opr.ptn[0]->pSimb->tipoD!=tipoIdUndef)
                     {
                         sprintf(msg,"Redeclaracao da variavel <%s>.", tn->opr.ptn[0]->pSimb->idNome);
                         erroSemantico(msg, tn->linha);
@@ -182,25 +215,68 @@ char *gera_quad(nodo *tn, int n)
                     fprintf(yyout,"  loadi(0, NULL, &ts[%d]); /* int %s; */\n", tn->opr.ptn[0]->pSimb->idx, tn->opr.ptn[0]->pSimb->idNome);
                     break;
                 case REAL:
-                    if(tn->opr.ptn[0]->pSimb->tipoD!=tipoIdIndef)
+                    if(tn->opr.ptn[0]->pSimb->tipoD!=tipoIdUndef)
                     {
                         sprintf(msg,"Redeclaracao da variavel <%s>.", tn->opr.ptn[0]->pSimb->idNome);
                         erroSemantico(msg, tn->linha);
                     }
-                    tn->opr.ptn[0]->pSimb->tipoD=tipoIdFloat;
+                    tn->opr.ptn[0]->pSimb->tipoD=tipoIdDouble;
                     tn->opr.ptn[0]->pSimb->idx=geraTS();
                     fprintf(yyout,"  loadf(0.00, NULL, &ts[%d]); /* real %s; */\n", tn->opr.ptn[0]->pSimb->idx, tn->opr.ptn[0]->pSimb->idNome);
                     break;
                 case TEXTO:
-                    if(tn->opr.ptn[0]->pSimb->tipoD!=tipoIdIndef)
+                    if(tn->opr.ptn[0]->pSimb->tipoD!=tipoIdUndef)
                     {
                         sprintf(msg,"Redeclaracao da variavel <%s>.", tn->opr.ptn[0]->pSimb->idNome);
                         erroSemantico(msg, tn->linha);
                     }
                     tn->opr.ptn[0]->pSimb->tipoD=tipoIdStr;
                     tn->opr.ptn[0]->pSimb->idx=geraTS();
-                    fprintf(yyout,"  loads(\"\\0\", NULL, &ts[%d]); /* str %s; */\n", tn->opr.ptn[0]->pSimb->idx, tn->opr.ptn[0]->pSimb->idNome);
+                    fprintf(yyout,"  loads(\"\\0\", NULL, &ts[%d]); /* texto %s; */\n", tn->opr.ptn[0]->pSimb->idx, tn->opr.ptn[0]->pSimb->idNome);
                     break;
+                case PONTI:
+                    if(debug) printf("debug PONTI\n");
+                    if(tn->opr.ptn[0]->pSimb->tipoD!=tipoIdUndef)
+                    {
+                        sprintf(msg,"Redeclaracao da variavel <%s>.", tn->opr.ptn[0]->pSimb->idNome);
+                        erroSemantico(msg, tn->linha);
+                    }
+                    tn->opr.ptn[0]->pSimb->tipoD=tipoIdPointInt;
+                    tn->opr.ptn[0]->pSimb->idx=geraTS();
+                    fprintf(yyout,"  loadi(-1, NULL, &ts[%d]); /* ponteiro int %s; */\n", tn->opr.ptn[0]->pSimb->idx, tn->opr.ptn[0]->pSimb->idNome);
+                    break;
+                case PONTR:
+                    if(debug) printf("debug PONTR\n");
+                    if(tn->opr.ptn[0]->pSimb->tipoD!=tipoIdUndef)
+                    {
+                        sprintf(msg,"Redeclaracao da variavel <%s>.", tn->opr.ptn[0]->pSimb->idNome);
+                        erroSemantico(msg, tn->linha);
+                    }
+                    tn->opr.ptn[0]->pSimb->tipoD=tipoIdPointDouble;
+                    tn->opr.ptn[0]->pSimb->idx=geraTS();
+                    fprintf(yyout,"  loadi(-1, NULL, &ts[%d]); /* ponteiro real %s; */\n", tn->opr.ptn[0]->pSimb->idx, tn->opr.ptn[0]->pSimb->idNome);
+                    break;
+                case PONTS:
+                    if(debug) printf("debug PONTS\n");
+                    if(tn->opr.ptn[0]->pSimb->tipoD!=tipoIdUndef)
+                    {
+                        sprintf(msg,"Redeclaracao da variavel <%s>.", tn->opr.ptn[0]->pSimb->idNome);
+                        erroSemantico(msg, tn->linha);
+                    }
+                    tn->opr.ptn[0]->pSimb->tipoD=tipoIdPointStr;
+                    tn->opr.ptn[0]->pSimb->idx=geraTS();
+                    fprintf(yyout,"  loadi(-1, NULL, &ts[%d]); /* ponteiro texto %s; */\n", tn->opr.ptn[0]->pSimb->idx, tn->opr.ptn[0]->pSimb->idNome);
+                    break;
+//                 case IMPORTE: //IMPORTE REAL IDENT '(' REAL ')' ';'
+//                     if(tn->opr.ptn[0]->pSimb->tipoD!=tipoIdUndef)
+//                     {
+//                         sprintf(msg,"Redeclaracao da variavel <%s>.", tn->opr.ptn[0]->pSimb->idNome);
+//                         erroSemantico(msg, tn->linha);
+//                     }
+//                     tn->opr.ptn[0]->pSimb->tipoD=tipoIdDouble;
+//                     tn->opr.ptn[0]->pSimb->idx=geraTS();
+//                     fprintf(yyout,"  loadf(0.00, NULL, &ts[%d]); /* real %s; */\n", tn->opr.ptn[0]->pSimb->idx, tn->opr.ptn[0]->pSimb->idNome);
+//                    tn->opr.tipoBOper = pegaTipoBase(tn->pSimb-tipoD);
                 case ';':
                     fprintf(yyout, "  nop(NULL,NULL,NULL);\t/* no operation */\n");
                     break;
@@ -208,10 +284,11 @@ char *gera_quad(nodo *tn, int n)
                     gera_quad(tn->opr.ptn[0], n);
                     gera_quad(tn->opr.ptn[1], n);
                     break;
-                case '=':
+                case '=': //p=&l;
+                    if(debug) printf("debug =\n");
                     qres=gera_quad(tn->opr.ptn[0], n+1);
                     q1=gera_quad(tn->opr.ptn[1], n+1);
-                    if(tn->opr.ptn[0]->pSimb->tipoD == tipoIdIndef)
+                    if(tn->opr.ptn[0]->pSimb->tipoD == tipoIdUndef)
                     {
                         sprintf(msg,"Atribuicao invalida a variavel <%s> nao declarada.", tn->opr.ptn[0]->pSimb->idNome);
                         erroSemantico(msg, tn->linha);
@@ -221,13 +298,47 @@ char *gera_quad(nodo *tn, int n)
                         sprintf(msg,"Atribuicao invalida a uma funcao <%s>.", tn->opr.ptn[0]->pSimb->idNome);
                         erroSemantico(msg, tn->linha);
                     }
-                    t0=pegaTipoBase(tn->opr.ptn[0]); //tipoInt, tipoFloat, tipoStr, tipoIndef
-                    t1=pegaTipoBase(tn->opr.ptn[1]);
-                    if(t0==t1)
-                        fprintf(yyout, "  mov(%s,NULL,&%s); /* %s = %s */\n", q1, qres, tn->opr.ptn[0]->pSimb->idNome, q1);
+                    t1=pegaTipoBase(tn->opr.ptn[0]); //tipoUndef, tipoInt, tipoDouble, tipoStr, nao tipoPoint
+                    t2=pegaTipoBase(tn->opr.ptn[1]);
+                    if(ponteiro(tn->opr.ptn[0]) && t2!=tipoInt)
+                    {
+                        sprintf(msg,"Atribuicao incompativel com ponteiros. <%s> = <%s>.", nomeTipo(tn->opr.ptn[0]), nomeTipo(tn->opr.ptn[1]));
+                        erroSemantico(msg, tn->linha);
+                    }
+                    if(t1==t2 || (ponteiro(tn->opr.ptn[0]) && t2==tipoInt))
+                    {
+                        tn->opr.tipoBOper = t2;
+                        fprintf(yyout, "  move(%s,NULL,&%s); /* %s = %s */\n", q1, qres, tn->opr.ptn[0]->pSimb->idNome, q1);
+                    }
                     else
                     { /* tipos diferentes */
-                        sprintf(msg,"Atribuicao de tipos diferentes. <%s, %s> = <%s, %s>.", nomeTipo(tn->opr.ptn[0]), sTipoBase[t0], nomeTipo(tn->opr.ptn[1]), sTipoBase[t1]);
+                        //if(debug) printf("debug =4\n");
+                        //printf("Atribuicao de tipos diferentes. <%u> = <%u>.", tn->opr.ptn[0], tn->opr.ptn[1]);
+                        //sprintf(msg,"Atribuicao de tipos diferentes. <%d> = <%d>.", tn->opr.ptn[0]->pSimb->tipoD, tn->opr.ptn[1]->opr.tipoBOper);
+                        sprintf(msg,"Atribuicao de tipos diferentes. <%s> = <%s>.", nomeTipo(tn->opr.ptn[0]), nomeTipo(tn->opr.ptn[1]));
+                        erroSemantico(msg, tn->linha);
+                    }
+                    //if(debug) printf("debug =fim\n");
+                    break;
+                case PATTRIB: //    | '*' IDENT '=' expr        { $$ = opr(PATTRIB, 2, conv($2), $4); }
+                    //if(debug) printf("debug =\n");
+                    qres=gera_quad(tn->opr.ptn[0], n+1);
+                    q1=gera_quad(tn->opr.ptn[1], n+1);
+                    if(!ponteiro(tn->opr.ptn[0]))
+                    {
+                        sprintf(msg,"Atribuicao invalida a variavel <%s> nao-ponteiro.", tn->opr.ptn[0]->pSimb->idNome);
+                        erroSemantico(msg, tn->linha);
+                    }
+                    t1=pegaTipoBase(tn->opr.ptn[0]);//tipoUndef tipoInt tipoDouble tipoStr tipoPointInt tipoPointDouble tipoPointStr
+                    t2=pegaTipoBase(tn->opr.ptn[1]);
+                    if(t1==t2)
+                    {
+                        tn->opr.tipoBOper = t2;
+                        fprintf(yyout, "  move_pb(%s,NULL,(&%s)); /* * %s = %s */\n", q1, qres, tn->opr.ptn[0]->pSimb->idNome, q1);
+                    }
+                    else
+                    { /* tipos diferentes */
+                        sprintf(msg,"Atribuicao de tipos diferentes. * <%s> = <%s>.", nomeTipo(tn->opr.ptn[0]), nomeTipo(tn->opr.ptn[1]));
                         erroSemantico(msg, tn->linha);
                     }
                     break;
@@ -235,33 +346,161 @@ char *gera_quad(nodo *tn, int n)
                     q1=gera_quad(tn->opr.ptn[0], n+1);
                     qres=geraTP(&itemp);
                     tn->opr.tipoBOper = pegaTipoBase(tn->opr.ptn[0]);
-                    if(tn->opr.tipoBOper  == tipoIndef)
+                    if(tn->opr.tipoBOper  == tipoUndef)
                     {
                         sprintf(msg,"Operando nao declarado na operacao de menos unario. - <%s>", sTipoBase[tn->opr.tipoBOper]);
                         erroSemantico(msg, tn->linha);
                     }
                     fprintf(yyout, "  uminus(%s,NULL,&%s);\n", q1, qres);
                     break;
+                case UPONT: //i=*q=j;
+                    if(debug) printf("debug UPONT\n");
+                    q1=gera_quad(tn->opr.ptn[0], n+1);
+                    qres=geraTP(&itemp);
+                    if(!ponteiro(tn->opr.ptn[0]))
+                    {
+                        sprintf(msg,"Tentativa de apontar valor em variavel nao-ponteiro. * <%s>", sTipoBase[t1]);
+                        erroSemantico(msg, tn->linha);
+                    }
+                    fprintf(yyout, "  move_pa((%s),NULL,&%s); /* %s = * %s */\n", q1, qres, qres, q1);
+                    tn->opr.tipoBOper = pegaTipoBase(tn->opr.ptn[0]); //por causa dessa linha, precisa ser 'ponteiro -int- p;'
+//                    t1 = pegaTipoBase(tn->opr.ptn[0]);
+//                    tn->opr.tipoBOper = t1;
+/*                    if(t1 == tipoPointInt)
+                        tn->opr.tipoBOper = tipoInt;
+                    else if(t1 == tipoPointDouble)
+                        tn->opr.tipoBOper = tipoDouble;
+                    else if(t1 == tipoPointStr)
+                        tn->opr.tipoBOper = tipoStr;*/
+                    break;
+                case UEND: //&i; &f;
+                    if(debug) printf("debug UEND\n");
+                    q1=gera_quad(tn->opr.ptn[0], n+1);
+                    t1 = pegaTipoBase(tn->opr.ptn[0]);
+                    //tn->opr.tipoBOper = tipoInt;
+                    //bug: erro! esta permitindo um 'ponteiro real p' apontar para um int i;
+                    //ponteiro int p; real f; p=&f;
+                    //solucao: retorna tipoPointInt/tipoPointDouble ou tipoEndInt tipoEndDouble
+                    //o que eh p? tipoPointInt. *p? tipoInt. i? tipoInt. &i? tipoPointInt *i=erro. &q? tipoPointInt
+                    // ponteiro ponteiro r; r? tipoPointPointInt. *r? tipoPointInt. **r? tipoInt
+                    if(t1 == tipoInt)
+                        tn->opr.tipoBOper = tipoPointInt; //operador & retorna tipoPointInt
+                    else if(t1 == tipoDouble)
+                        tn->opr.tipoBOper = tipoPointDouble; //operador & retorna tipoPointDouble
+                    else if(t1 == tipoStr)
+                        tn->opr.tipoBOper = tipoPointStr; //operador & retorna tipoPointStr*/
+//                    else
+                    if(!variavel(tn->opr.ptn[0]))
+                    {
+                        sprintf(msg,"Operador endereco nao aceita variavel deste tipo. & <%s>", sTipoBase[t1]);
+                        erroSemantico(msg, tn->linha);
+                    }
+
+                    ps = achaInt(tn->opr.ptn[0]->pSimb->idx);
+                    sprintf(qtemp,"tc[%d]",ps->idx); //constante com indice
+                    if(!ps->uso)
+                    {
+                        fprintf(yyout, "  loadi(%d,NULL,&%s); /* %s = %d */\n", tn->opr.ptn[0]->pSimb->idx, qtemp, qtemp, tn->opr.ptn[0]->pSimb->idx); //tc[1]=ptn->idx
+                        ps->uso=1;
+                    }
+                    break;
+                case INCPOS: //IDENT INC
+                    if(debug) printf("debug INCPOS\n");
+                    q1=gera_quad(tn->opr.ptn[0], n+1); // move(q1, null, qres)
+                    qres=geraTP(&itemp); //tp[0] == ret
+                    t1 = pegaTipoBase(tn->opr.ptn[0]);
+                    if(t1 == tipoUndef)
+                    {
+                        sprintf(msg,"Operando nao declarado na operacao de incremento pos-fixado. <%s>++", sTipoBase[tn->opr.tipoBOper]);
+                        erroSemantico(msg, tn->linha);
+                    }
+                    if(t1 == tipoStr)
+                        erroSemantico("Nao posso incrementar textos.", tn->linha);
+                    tn->opr.tipoBOper = t1;
+                    fprintf(yyout, "  move(%s,NULL,&%s); /* %s = %s */\n", q1, qres, qres, tn->opr.ptn[0]->pSimb->idNome);
+                    ps = achaInt(1);
+                    sprintf(qtemp,"tc[%d]",ps->idx); //constante 1
+                    if(!ps->uso)
+                    {
+                        fprintf(yyout, "  loadi(1,NULL,&%s); /* %s = 1 */\n", qtemp, qtemp); //tp[1]=1
+                        ps->uso=1;
+                    }
+                    q3=geraTP(&itemp); //tp[3]
+                    fprintf(yyout, "  add(%s,%s,&%s);\n", q1, qtemp, q3);
+                    fprintf(yyout, "  move(%s,NULL,&%s); /* %s = %s */\n", q3, q1, tn->opr.ptn[0]->pSimb->idNome, q3);
+                    //printf("debug 3\n");
+                    break;
+                case INCPRE: //INC IDENT
+                    if(debug) printf("debug INCPRE\n");
+                    qres=gera_quad(tn->opr.ptn[0], n+1); // add(qres, 1, q1)
+                    q1=geraTP(&itemp);
+                    t1 = pegaTipoBase(tn->opr.ptn[0]);
+                    if(t1 == tipoUndef)
+                    {
+                        sprintf(msg,"Operando nao declarado na operacao de incremento pre-fixado. ++<%s>", sTipoBase[tn->opr.tipoBOper]);
+                        erroSemantico(msg, tn->linha);
+                    }
+                    if(t1 == tipoStr)
+                        erroSemantico("Nao posso incrementar textos.", tn->linha);
+                    tn->opr.tipoBOper = t1;
+                    ps = achaInt(1);
+                    sprintf(qtemp,"tc[%d]",ps->idx); //constante 1
+                    if(!ps->uso)
+                    {
+                        fprintf(yyout, "  loadi(1,NULL,&%s); /* %s = 1 */\n", qtemp, qtemp); //tp[1]=1
+                        ps->uso=1;
+                    }
+                    fprintf(yyout, "  add(%s,%s,&%s);\n", qres, qtemp, q1); //A+1 -> q1
+                    fprintf(yyout, "  move(%s,NULL,&%s); /* %s = %s */\n", q1, qres, tn->opr.ptn[0]->pSimb->idNome, q1);
+                    //printf("debug 4\n");
+                    break;
+                case DECPOS: //    | IDENT DEC                 { $$ = opr(DECPOS, 1, conv($1)); }
+                    //if(debug) printf("debug DECPOS\n");
+                    q1=gera_quad(tn->opr.ptn[0], n+1); // move(q1, null, qres)
+                    qres=geraTP(&itemp); //tp[0] == ret
+                    t1 = pegaTipoBase(tn->opr.ptn[0]);
+                    if(t1 == tipoUndef)
+                    {
+                        sprintf(msg,"Operando nao declarado na operacao de incremento pos-fixado. <%s>++", sTipoBase[tn->opr.tipoBOper]);
+                        erroSemantico(msg, tn->linha);
+                    }
+                    if(t1 == tipoStr)
+                        erroSemantico("Nao posso incrementar textos.", tn->linha);
+                    tn->opr.tipoBOper = t1;
+                    fprintf(yyout, "  move(%s,NULL,&%s); /* %s = %s */\n", q1, qres, qres, tn->opr.ptn[0]->pSimb->idNome);
+                    ps = achaInt(1);
+                    sprintf(qtemp,"tc[%d]",ps->idx); //constante 1
+                    if(!ps->uso)
+                    {
+                        fprintf(yyout, "  loadi(1,NULL,&%s); /* %s = 1 */\n", qtemp, qtemp); //tp[1]=1
+                        ps->uso=1;
+                    }
+                    q3=geraTP(&itemp); //tp[3]
+                    fprintf(yyout, "  sub(%s,%s,&%s);\n", q1, qtemp, q3);
+                    fprintf(yyout, "  move(%s,NULL,&%s); /* %s = %s */\n", q3, q1, tn->opr.ptn[0]->pSimb->idNome, q3);
+                    //printf("debug 3\n");
+                    break;
+//    | DEC IDENT                 { $$ = opr(DECPRE, 1, conv($2)); }
                 case '+':
                     q1=gera_quad(tn->opr.ptn[0], n+1);
                     q2=gera_quad(tn->opr.ptn[1], n+1);
                     qres=geraTP(&itemp);
-                    t0=pegaTipoBase(tn->opr.ptn[0]);
-                    t1=pegaTipoBase(tn->opr.ptn[1]);
-                    if(t0 == tipoIndef || t1 == tipoIndef)
+                    t1=pegaTipoBase(tn->opr.ptn[0]);
+                    t2=pegaTipoBase(tn->opr.ptn[1]);
+                    if(t1 == tipoUndef || t2 == tipoUndef)
                     {
-                        sprintf(msg,"Operando nao declarado na operacao de soma. <%s> + <%s>", sTipoBase[t0], sTipoBase[t1]);
+                        sprintf(msg,"Operando nao declarado na operacao de soma. <%s> + <%s>", sTipoBase[t1], sTipoBase[t2]);
                         erroSemantico(msg, tn->linha);
                     }
-                    if((t0 == tipoStr || t1 == tipoStr) && (t0 != tipoStr || t1 != tipoStr))
+                    if((t1 == tipoStr || t2 == tipoStr) && (t1 != tipoStr || t2 != tipoStr))
                         erroSemantico("Nao posso somar textos com numeros.", tn->linha);
-                    if(t0==tipoFloat || t1==tipoFloat)
-                        tn->opr.tipoBOper = tipoFloat;
+                    if(ponteiro(tn->opr.ptn[0]) || ponteiro(tn->opr.ptn[1]))
+                        erroSemantico("Nao posso somar ponteiros.", tn->linha);
+                    if(t1==tipoDouble || t2==tipoDouble)
+                        tn->opr.tipoBOper = tipoDouble;
                     else
-                        tn->opr.tipoBOper = tipoInt;//t0; //bug:
-                    //erroSemantico("Nao posso somar textos com numeros.", tn->linha);
-                    //bug: cade a soma de strings? tipoBOPer=tipoStr
-                    if(t0 == tipoStr)
+                        tn->opr.tipoBOper = t1;
+                    if(t1 == tipoStr)
                         tn->opr.tipoBOper = tipoStr;
                     fprintf(yyout, "  add(%s,%s,&%s);\n", q1, q2, qres);
                     break;
@@ -269,17 +508,19 @@ char *gera_quad(nodo *tn, int n)
                     q1=gera_quad(tn->opr.ptn[0], n+1);
                     q2=gera_quad(tn->opr.ptn[1], n+1);
                     qres=geraTP(&itemp);
-                    t0=pegaTipoBase(tn->opr.ptn[0]);
-                    t1=pegaTipoBase(tn->opr.ptn[1]);
-                    if(t0 == tipoIndef || t1 == tipoIndef)
+                    t1=pegaTipoBase(tn->opr.ptn[0]);
+                    t2=pegaTipoBase(tn->opr.ptn[1]);
+                    if(t1 == tipoUndef || t2 == tipoUndef)
                     {
-                        sprintf(msg,"Operando nao declarado na operacao de subtracao. <%s> - <%s>", sTipoBase[t0], sTipoBase[t1]);
+                        sprintf(msg,"Operando nao declarado na operacao de subtracao. <%s> - <%s>", sTipoBase[t1], sTipoBase[t2]);
                         erroSemantico(msg, tn->linha);
                     }
-                    if(t0 == tipoStr || t1 == tipoStr)
+                    if(t1 == tipoStr || t2 == tipoStr)
                         erroSemantico("Nao posso subtrair textos.", tn->linha);
-                    if(t0==tipoFloat || t1==tipoFloat)
-                        tn->opr.tipoBOper = tipoFloat;
+                    if(ponteiro(tn->opr.ptn[0]) || ponteiro(tn->opr.ptn[1]))
+                        erroSemantico("Nao posso subtrair ponteiros.", tn->linha);
+                    if(t1==tipoDouble || t2==tipoDouble)
+                        tn->opr.tipoBOper = tipoDouble;
                     else
                         tn->opr.tipoBOper = tipoInt;
                     fprintf(yyout, "  sub(%s,%s,&%s);\n", q1, q2, qres);
@@ -288,17 +529,19 @@ char *gera_quad(nodo *tn, int n)
                     q1=gera_quad(tn->opr.ptn[0], n+1);
                     q2=gera_quad(tn->opr.ptn[1], n+1);
                     qres=geraTP(&itemp);
-                    t0=pegaTipoBase(tn->opr.ptn[0]);
-                    t1=pegaTipoBase(tn->opr.ptn[1]);
-                    if(t0 == tipoIndef || t1 == tipoIndef)
+                    t1=pegaTipoBase(tn->opr.ptn[0]);
+                    t2=pegaTipoBase(tn->opr.ptn[1]);
+                    if(t1 == tipoUndef || t2 == tipoUndef)
                     {
-                        sprintf(msg,"Operando nao declarado na operacao de multiplicacao. <%s> * <%s>", sTipoBase[t0], sTipoBase[t1]);
+                        sprintf(msg,"Operando nao declarado na operacao de multiplicacao. <%s> * <%s>", sTipoBase[t1], sTipoBase[t2]);
                         erroSemantico(msg, tn->linha);
                     }
-                    if(t0 == tipoStr || t1 == tipoStr)
+                    if(t1 == tipoStr || t2 == tipoStr)
                         erroSemantico("Nao posso multiplicar textos.", tn->linha);
-                    if(t0==tipoFloat || t1==tipoFloat)
-                        tn->opr.tipoBOper = tipoFloat;
+                    if(ponteiro(tn->opr.ptn[0]) || ponteiro(tn->opr.ptn[1]))
+                        erroSemantico("Nao posso multiplicar ponteiros.", tn->linha);
+                    if(t1==tipoDouble || t2==tipoDouble)
+                        tn->opr.tipoBOper = tipoDouble;
                     else
                         tn->opr.tipoBOper = tipoInt;
                     fprintf(yyout, "  mult(%s,%s,&%s);\n", q1, q2, qres);
@@ -307,17 +550,19 @@ char *gera_quad(nodo *tn, int n)
                     q1=gera_quad(tn->opr.ptn[0], n+1);
                     q2=gera_quad(tn->opr.ptn[1], n+1);
                     qres=geraTP(&itemp);
-                    t0=pegaTipoBase(tn->opr.ptn[0]);
-                    t1=pegaTipoBase(tn->opr.ptn[1]);
-                    if(t0 == tipoIndef || t1 == tipoIndef)
+                    t1=pegaTipoBase(tn->opr.ptn[0]);
+                    t2=pegaTipoBase(tn->opr.ptn[1]);
+                    if(t1 == tipoUndef || t2 == tipoUndef)
                     {
-                        sprintf(msg,"Operando nao declarado na operacao de divisao. <%s> / <%s>", sTipoBase[t0], sTipoBase[t1]);
+                        sprintf(msg,"Operando nao declarado na operacao de divisao. <%s> / <%s>", sTipoBase[t1], sTipoBase[t2]);
                         erroSemantico(msg, tn->linha);
                     }
-                    if(t0 == tipoStr || t1 == tipoStr)
+                    if(t1 == tipoStr || t2 == tipoStr)
                         erroSemantico("Nao posso dividir textos.", tn->linha);
-                    if(t0==tipoFloat || t1==tipoFloat)
-                        tn->opr.tipoBOper = tipoFloat;
+                    if(ponteiro(tn->opr.ptn[0]) || ponteiro(tn->opr.ptn[1]))
+                        erroSemantico("Nao posso dividir ponteiros.", tn->linha);
+                    if(t1==tipoDouble || t2==tipoDouble)
+                        tn->opr.tipoBOper = tipoDouble;
                     else
                         tn->opr.tipoBOper = tipoInt;
                     fprintf(yyout, "  divi(%s,%s,&%s);\n", q1, q2, qres);
@@ -326,24 +571,26 @@ char *gera_quad(nodo *tn, int n)
                     q1=gera_quad(tn->opr.ptn[0], n+1);
                     q2=gera_quad(tn->opr.ptn[1], n+1);
                     qres=geraTP(&itemp);
-                    t0=pegaTipoBase(tn->opr.ptn[0]);
-                    t1=pegaTipoBase(tn->opr.ptn[1]);
-                    if(t0 == tipoIndef || t1 == tipoIndef)
+                    t1=pegaTipoBase(tn->opr.ptn[0]);
+                    t2=pegaTipoBase(tn->opr.ptn[1]);
+                    if(t1 == tipoUndef || t2 == tipoUndef)
                     {
-                        sprintf(msg,"Operando nao declarado na operacao de modulo. <%s> % <%s>", sTipoBase[t0], sTipoBase[t1]);
+                        sprintf(msg,"Operando nao declarado na operacao de modulo. <%s> % <%s>", sTipoBase[t1], sTipoBase[t2]);
                         erroSemantico(msg, tn->linha);
                     }
-                    if(t0 == tipoStr || t1 == tipoStr)
+                    if(t1 == tipoStr || t2 == tipoStr)
                         erroSemantico("Nao posso calcular modulo de textos.", tn->linha);
-                    if(t0 == tipoFloat || t1 == tipoFloat)
-                        erroSemantico("Nao posso calcular modulo de <tipoFloat>.", tn->linha);
+                    if(ponteiro(tn->opr.ptn[0]) || ponteiro(tn->opr.ptn[1]))
+                        erroSemantico("Nao posso calcular modulo de ponteiros.", tn->linha);
+                    if(t1 == tipoDouble || t2 == tipoDouble)
+                        erroSemantico("Nao posso calcular modulo de <tipoDouble>.", tn->linha);
                     tn->opr.tipoBOper = tipoInt;
                     fprintf(yyout, "  mod(%s,%s,&%s);\n", q1, q2, qres);
                     break;
                 case '(':
                     qres=gera_quad(tn->opr.ptn[0], n+1);
                     tn->opr.tipoBOper = pegaTipoBase(tn->opr.ptn[0]);
-                    if(tn->opr.tipoBOper  == tipoIndef)
+                    if(tn->opr.tipoBOper  == tipoUndef)
                     {
                         sprintf(msg,"Operando nao declarado na operacao de parenteses. ( <%s> )", sTipoBase[tn->opr.tipoBOper]);
                         erroSemantico(msg, tn->linha);
@@ -353,14 +600,14 @@ char *gera_quad(nodo *tn, int n)
                     q1=gera_quad(tn->opr.ptn[0], n+1);
                     q2=gera_quad(tn->opr.ptn[1], n+1);
                     qres=geraTP(&itemp);
-                    t0=pegaTipoBase(tn->opr.ptn[0]);
-                    t1=pegaTipoBase(tn->opr.ptn[1]);
-                    if(t0 == tipoIndef || t1 == tipoIndef)
+                    t1=pegaTipoBase(tn->opr.ptn[0]);
+                    t2=pegaTipoBase(tn->opr.ptn[1]);
+                    if(t1 == tipoUndef || t2 == tipoUndef)
                     {
-                        sprintf(msg,"Operando nao declarado na operacao de menor-que. <%s> < <%s>", sTipoBase[t0], sTipoBase[t1]);
+                        sprintf(msg,"Operando nao declarado na operacao de menor-que. <%s> < <%s>", sTipoBase[t1], sTipoBase[t2]);
                         erroSemantico(msg, tn->linha);
                     }
-                    if((t0 == tipoStr || t1 == tipoStr) && (t0 != tipoStr || t1 != tipoStr))
+                    if((t1 == tipoStr || t2 == tipoStr) && (t1 != tipoStr || t2 != tipoStr))
                         erroSemantico("Nao posso comparar (<) textos com numeros.", tn->linha);
                     tn->opr.tipoBOper = tipoInt;
                     fprintf(yyout, "  comp_lt(%s,%s,&%s);\n", q1, q2, qres);
@@ -369,14 +616,14 @@ char *gera_quad(nodo *tn, int n)
                     q1=gera_quad(tn->opr.ptn[0], n+1);
                     q2=gera_quad(tn->opr.ptn[1], n+1);
                     qres=geraTP(&itemp);
-                    t0=pegaTipoBase(tn->opr.ptn[0]);
-                    t1=pegaTipoBase(tn->opr.ptn[1]);
-                    if(t0 == tipoIndef || t1 == tipoIndef)
+                    t1=pegaTipoBase(tn->opr.ptn[0]);
+                    t2=pegaTipoBase(tn->opr.ptn[1]);
+                    if(t1 == tipoUndef || t2 == tipoUndef)
                     {
-                        sprintf(msg,"Operando nao declarado na operacao de maior-que. <%s> > <%s>", sTipoBase[t0], sTipoBase[t1]);
+                        sprintf(msg,"Operando nao declarado na operacao de maior-que. <%s> > <%s>", sTipoBase[t1], sTipoBase[t2]);
                         erroSemantico(msg, tn->linha);
                     }
-                    if((t0 == tipoStr || t1 == tipoStr) && (t0 != tipoStr || t1 != tipoStr))
+                    if((t1 == tipoStr || t2 == tipoStr) && (t1 != tipoStr || t2 != tipoStr))
                         erroSemantico("Nao posso comparar (>) textos com numeros.", tn->linha);
                     tn->opr.tipoBOper = tipoInt;
                     fprintf(yyout, "  comp_gt(%s,%s,&%s);\n", q1, q2, qres);
@@ -385,14 +632,14 @@ char *gera_quad(nodo *tn, int n)
                     q1=gera_quad(tn->opr.ptn[0], n+1);
                     q2=gera_quad(tn->opr.ptn[1], n+1);
                     qres=geraTP(&itemp);
-                    t0=pegaTipoBase(tn->opr.ptn[0]);
-                    t1=pegaTipoBase(tn->opr.ptn[1]);
-                    if(t0 == tipoIndef || t1 == tipoIndef)
+                    t1=pegaTipoBase(tn->opr.ptn[0]);
+                    t2=pegaTipoBase(tn->opr.ptn[1]);
+                    if(t1 == tipoUndef || t2 == tipoUndef)
                     {
-                        sprintf(msg,"Operando nao declarado na operacao de maior-igual. <%s> >= <%s>", sTipoBase[t0], sTipoBase[t1]);
+                        sprintf(msg,"Operando nao declarado na operacao de maior-igual. <%s> >= <%s>", sTipoBase[t1], sTipoBase[t2]);
                         erroSemantico(msg, tn->linha);
                     }
-                    if((t0 == tipoStr || t1 == tipoStr) && (t0 != tipoStr || t1 != tipoStr))
+                    if((t1 == tipoStr || t2 == tipoStr) && (t1 != tipoStr || t2 != tipoStr))
                         erroSemantico("Nao posso comparar (>=) textos com numeros.", tn->linha);
                     tn->opr.tipoBOper = tipoInt;
                     fprintf(yyout, "  comp_ge(%s,%s,&%s);\n", q1, q2, qres);
@@ -401,14 +648,14 @@ char *gera_quad(nodo *tn, int n)
                     q1=gera_quad(tn->opr.ptn[0], n+1);
                     q2=gera_quad(tn->opr.ptn[1], n+1);
                     qres=geraTP(&itemp);
-                    t0=pegaTipoBase(tn->opr.ptn[0]);
-                    t1=pegaTipoBase(tn->opr.ptn[1]);
-                    if(t0 == tipoIndef || t1 == tipoIndef)
+                    t1=pegaTipoBase(tn->opr.ptn[0]);
+                    t2=pegaTipoBase(tn->opr.ptn[1]);
+                    if(t1 == tipoUndef || t2 == tipoUndef)
                     {
-                        sprintf(msg,"Operando nao declarado na operacao de menor-igual. <%s> <= <%s>", sTipoBase[t0], sTipoBase[t1]);
+                        sprintf(msg,"Operando nao declarado na operacao de menor-igual. <%s> <= <%s>", sTipoBase[t1], sTipoBase[t2]);
                         erroSemantico(msg, tn->linha);
                     }
-                    if((t0 == tipoStr || t1 == tipoStr) && (t0 != tipoStr || t1 != tipoStr))
+                    if((t1 == tipoStr || t2 == tipoStr) && (t1 != tipoStr || t2 != tipoStr))
                         erroSemantico("Nao posso comparar (<=) textos com numeros.", tn->linha);
                     tn->opr.tipoBOper = tipoInt;
                     fprintf(yyout, "  comp_le(%s,%s,&%s);\n", q1, q2, qres);
@@ -417,14 +664,14 @@ char *gera_quad(nodo *tn, int n)
                     q1=gera_quad(tn->opr.ptn[0], n+1);
                     q2=gera_quad(tn->opr.ptn[1], n+1);
                     qres=geraTP(&itemp);
-                    t0=pegaTipoBase(tn->opr.ptn[0]);
-                    t1=pegaTipoBase(tn->opr.ptn[1]);
-                    if(t0 == tipoIndef || t1 == tipoIndef)
+                    t1=pegaTipoBase(tn->opr.ptn[0]);
+                    t2=pegaTipoBase(tn->opr.ptn[1]);
+                    if(t1 == tipoUndef || t2 == tipoUndef)
                     {
-                        sprintf(msg,"Operando nao declarado na operacao de diferente. <%s> != <%s>", sTipoBase[t0], sTipoBase[t1]);
+                        sprintf(msg,"Operando nao declarado na operacao de diferente. <%s> != <%s>", sTipoBase[t1], sTipoBase[t2]);
                         erroSemantico(msg, tn->linha);
                     }
-                    if((t0 == tipoStr || t1 == tipoStr) && (t0 != tipoStr || t1 != tipoStr))
+                    if((t1 == tipoStr || t2 == tipoStr) && (t1 != tipoStr || t2 != tipoStr))
                         erroSemantico("Nao posso comparar (!=) textos com numeros.", tn->linha);
                     tn->opr.tipoBOper = tipoInt;
                     fprintf(yyout, "  comp_ne(%s,%s,&%s);\n", q1, q2, qres);
@@ -433,14 +680,14 @@ char *gera_quad(nodo *tn, int n)
                     q1=gera_quad(tn->opr.ptn[0], n+1);
                     q2=gera_quad(tn->opr.ptn[1], n+1);
                     qres=geraTP(&itemp);
-                    t0=pegaTipoBase(tn->opr.ptn[0]);
-                    t1=pegaTipoBase(tn->opr.ptn[1]);
-                    if(t0 == tipoIndef || t1 == tipoIndef)
+                    t1=pegaTipoBase(tn->opr.ptn[0]);
+                    t2=pegaTipoBase(tn->opr.ptn[1]);
+                    if(t1 == tipoUndef || t2 == tipoUndef)
                     {
-                        sprintf(msg,"Operando nao declarado na operacao de igual. <%s> == <%s>", sTipoBase[t0], sTipoBase[t1]);
+                        sprintf(msg,"Operando nao declarado na operacao de igual. <%s> == <%s>", sTipoBase[t1], sTipoBase[t2]);
                         erroSemantico(msg, tn->linha);
                     }
-                    if((t0 == tipoStr || t1 == tipoStr) && (t0 != tipoStr || t1 != tipoStr))
+                    if((t1 == tipoStr || t2 == tipoStr) && (t1 != tipoStr || t2 != tipoStr))
                         erroSemantico("Nao posso comparar (==) textos com numeros.", tn->linha);
                     tn->opr.tipoBOper = tipoInt;
                     fprintf(yyout, "  comp_eq(%s,%s,&%s);\n", q1, q2, qres);
@@ -449,14 +696,14 @@ char *gera_quad(nodo *tn, int n)
                     q1=gera_quad(tn->opr.ptn[0], n+1);
                     q2=gera_quad(tn->opr.ptn[1], n+1);
                     qres=geraTP(&itemp);
-                    t0=pegaTipoBase(tn->opr.ptn[0]);
-                    t1=pegaTipoBase(tn->opr.ptn[1]);
-                    if(t0 == tipoIndef || t1 == tipoIndef)
+                    t1=pegaTipoBase(tn->opr.ptn[0]);
+                    t2=pegaTipoBase(tn->opr.ptn[1]);
+                    if(t1 == tipoUndef || t2 == tipoUndef)
                     {
-                        sprintf(msg,"Operando nao declarado na operacao de E logico. <%s> E <%s>", sTipoBase[t0], sTipoBase[t1]);
+                        sprintf(msg,"Operando nao declarado na operacao de E logico. <%s> E <%s>", sTipoBase[t1], sTipoBase[t2]);
                         erroSemantico(msg, tn->linha);
                     }
-                    if(t0 == tipoStr || t1 == tipoStr)
+                    if(t1 == tipoStr || t2 == tipoStr)
                         erroSemantico("Nao posso operar (E) em textos.", tn->linha);
                     tn->opr.tipoBOper = tipoInt;
                     fprintf(yyout, "  rela_an(%s,%s,&%s);\n", q1,q2,qres);
@@ -465,14 +712,14 @@ char *gera_quad(nodo *tn, int n)
                     q1=gera_quad(tn->opr.ptn[0], n+1);
                     q2=gera_quad(tn->opr.ptn[1], n+1);
                     qres=geraTP(&itemp);
-                    t0=pegaTipoBase(tn->opr.ptn[0]);
-                    t1=pegaTipoBase(tn->opr.ptn[1]);
-                    if(t0 == tipoIndef || t1 == tipoIndef)
+                    t1=pegaTipoBase(tn->opr.ptn[0]);
+                    t2=pegaTipoBase(tn->opr.ptn[1]);
+                    if(t1 == tipoUndef || t2 == tipoUndef)
                     {
-                        sprintf(msg,"Operando nao declarado na operacao de OU logico. <%s> OU <%s>", sTipoBase[t0], sTipoBase[t1]);
+                        sprintf(msg,"Operando nao declarado na operacao de OU logico. <%s> OU <%s>", sTipoBase[t1], sTipoBase[t2]);
                         erroSemantico(msg, tn->linha);
                     }
-                    if(t0 == tipoStr || t1 == tipoStr)
+                    if(t1 == tipoStr || t2 == tipoStr)
                         erroSemantico("Nao posso operar (OU) em textos.", tn->linha);
                     tn->opr.tipoBOper = tipoInt;
                     fprintf(yyout, "  rela_or(%s,%s,&%s);\n", q1,q2,qres);
@@ -480,20 +727,20 @@ char *gera_quad(nodo *tn, int n)
                 case NAO:
                     q1=gera_quad(tn->opr.ptn[0], n+1);
                     qres=geraTP(&itemp);
-                    t0=pegaTipoBase(tn->opr.ptn[0]);
-                    if(t0 == tipoIndef)
+                    t1=pegaTipoBase(tn->opr.ptn[0]);
+                    if(t1 == tipoUndef)
                     {
-                        sprintf(msg,"Operando nao declarado na operacao de NAO logico. NAO <%s>", sTipoBase[t0]);
+                        sprintf(msg,"Operando nao declarado na operacao de NAO logico. NAO <%s>", sTipoBase[t1]);
                         erroSemantico(msg, tn->linha);
                     }
-                    if(t0 == tipoStr)
+                    if(t1 == tipoStr)
                         erroSemantico("Nao posso operar (NAO) em textos.", tn->linha);
                     tn->opr.tipoBOper = tipoInt;
                     fprintf(yyout, "  rela_no(%s,%s,&%s);\n", q1,"NULL",qres);
                     break;
             }
     }
-    if(qres!=NULL)
+    if(qres!=NULL) //retorna na ordem de prioridade: qres ou qtemp
         strcpy(qtemp,qres);
     free(q1); free(q2); free(q3); free(qres);
     return strdup(qtemp);
@@ -551,7 +798,7 @@ void printTS(void)
         if(!tabSimb[n].idNome)
             return;
         printf("----------------------------\n");
-        printf("tabSimb[%d].tipoD=%s\n", n, sTipoDado[tabSimb[n].tipoD]);
+        printf("tabSimb[%d].tipoD=%d (%s)\n", n, tabSimb[n].tipoD, sTipoDado[tabSimb[n].tipoD]);
         printf("tabSimb[%d].idx=%d\n", n, tabSimb[n].idx);
         printf("tabSimb[%d].idNome=%s\n", n, tabSimb[n].idNome);
         switch(tabSimb[n].tipoD)
@@ -560,7 +807,7 @@ void printTS(void)
                 printf("tabSimb[%d].uso=%d\n", n, tabSimb[n].uso);
                 printf("tabSimb[%d].ival=%d\n", n, tabSimb[n].ival);
                 break;
-            case tipoConFloat:
+            case tipoConDouble:
                 printf("tabSimb[%d].uso=%d\n", n, tabSimb[n].uso);
                 printf("tabSimb[%d].fval=%.2f\n", n, tabSimb[n].fval);
                 break;
@@ -569,29 +816,39 @@ void printTS(void)
                 printf("tabSimb[%d].sval=%s\n", n, tabSimb[n].sval);
                 break;
             case tipoIdInt:
-            case tipoIdFloat:
+            case tipoIdDouble:
             case tipoIdStr:
-            case tipoIdIndef:
+            case tipoIdUndef:
+                break;
+            case tipoIdPointInt:
+            case tipoIdPointDouble:
+            case tipoIdPointStr:
+                //printf("tabSimb[%d].pval=%d\n", n, tabSimb[n].pval);
                 break;
             case tipoIdFuncInt:
+                printf("tabSimb[%d].tipoRetNovo=%d (%s)\n", n, tabSimb[n].tipoRetNovo, sTipoDado[tabSimb[n].tipoRetNovo]);
                 printf("tabSimb[%d].idFunc=%s\n", n, tabSimb[n].idFunc);
                 printf("tabSimb[%d].ifunc=%u\n", n, tabSimb[n].ifunc);
                 break;
-            case tipoIdFuncFloat:
+            case tipoIdFuncDouble:
+                printf("tabSimb[%d].tipoRetNovo=%d (%s)\n", n, tabSimb[n].tipoRetNovo, sTipoDado[tabSimb[n].tipoRetNovo]);
                 printf("tabSimb[%d].idFunc=%s\n", n, tabSimb[n].idFunc);
                 printf("tabSimb[%d].ffunc=%u\n", n, tabSimb[n].ffunc);
                 break;
             case tipoIdFuncDouble:
+                printf("tabSimb[%d].tipoRetNovo=%d (%s)\n", n, tabSimb[n].tipoRetNovo, sTipoDado[tabSimb[n].tipoRetNovo]);
                 printf("tabSimb[%d].idFunc=%s\n", n, tabSimb[n].idFunc);
                 printf("tabSimb[%d].dfunc=%u\n", n, tabSimb[n].dfunc);
                 break;
             case tipoIdFuncChar:
                 break;
             case tipoIdFuncStr:
+                printf("tabSimb[%d].tipoRetNovo=%d (%s)\n", n, tabSimb[n].tipoRetNovo, sTipoDado[tabSimb[n].tipoRetNovo]);
                 printf("tabSimb[%d].idFunc=%s\n", n, tabSimb[n].idFunc);
                 printf("tabSimb[%d].sfunc=%u\n", n, tabSimb[n].sfunc);
                 break;
             case tipoIdFuncVoid:
+                printf("tabSimb[%d].tipoRetNovo=%d (%s)\n", n, tabSimb[n].tipoRetNovo, sTipoDado[tabSimb[n].tipoRetNovo]);
                 printf("tabSimb[%d].idFunc=%s\n", n, tabSimb[n].idFunc);
                 printf("tabSimb[%d].vfunc=%u\n", n, tabSimb[n].vfunc);
                 break;
@@ -614,7 +871,7 @@ void printNodo(nodo *tn, int n, char *var)
     if(tn->tipoN==tipoSimb)
     {
         printf("----------------------------\n");
-        printf("(%d) %s->pSimb->tipoD=%s\n", n, var, nome);
+        printf("(%d) %s->pSimb->tipoD=%d (%s)\n", n, var, tn->pSimb->tipoD, nome);
         printf("(%d) %s->pSimb->idx=%d\n", n, var, tn->pSimb->idx);
         printf("(%d) %s->pSimb->idNome=%s\n", n, var, tn->pSimb->idNome);
         switch(tn->pSimb->tipoD)
@@ -623,7 +880,7 @@ void printNodo(nodo *tn, int n, char *var)
                 printf("(%d) %s->pSimb->uso=%d\n", n, var, tn->pSimb->uso);
                 printf("(%d) %s->pSimb->ival=%d\n", n, var, tn->pSimb->ival);
                 break;
-            case tipoConFloat:
+            case tipoConDouble:
                 printf("(%d) %s->pSimb->uso=%d\n", n, var, tn->pSimb->uso);
                 printf("(%d) %s->pSimb->fval=%.2f\n", n, var, tn->pSimb->fval);
                 break;
@@ -632,29 +889,37 @@ void printNodo(nodo *tn, int n, char *var)
                 printf("(%d) %s->pSimb->sval=%s\n", n, var, tn->pSimb->sval);
                 break;
             case tipoIdInt:
-            case tipoIdFloat:
+            case tipoIdDouble:
             case tipoIdStr:
-            case tipoIdIndef:
+            case tipoIdPointInt:
+            case tipoIdPointDouble:
+            case tipoIdPointStr:
+            case tipoIdUndef:
                 break;
             case tipoIdFuncInt:
+                printf("(%d) %s->pSimb->tipoRetNovo=%d (%s)\n", n, var, tn->pSimb->tipoRetNovo, sTipoDado[tn->pSimb->tipoRetNovo]);
                 printf("(%d) %s->pSimb->idFunc=%s\n", n, var, tn->pSimb->idFunc);
                 printf("(%d) %s->pSimb->ifunc=%u\n", n, var, tn->pSimb->ifunc);
                 break;
-            case tipoIdFuncFloat:
+            case tipoIdFuncDouble:
+                printf("(%d) %s->pSimb->tipoRetNovo=%d (%s)\n", n, var, tn->pSimb->tipoRetNovo, sTipoDado[tn->pSimb->tipoRetNovo]);
                 printf("(%d) %s->pSimb->idFunc=%s\n", n, var, tn->pSimb->idFunc);
                 printf("(%d) %s->pSimb->ffunc=%u\n", n, var, tn->pSimb->ffunc);
                 break;
             case tipoIdFuncDouble:
+                printf("(%d) %s->pSimb->tipoRetNovo=%d (%s)\n", n, var, tn->pSimb->tipoRetNovo, sTipoDado[tn->pSimb->tipoRetNovo]);
                 printf("(%d) %s->pSimb->idFunc=%s\n", n, var, tn->pSimb->idFunc);
                 printf("(%d) %s->pSimb->dfunc=%u\n", n, var, tn->pSimb->dfunc);
                 break;
             case tipoIdFuncChar:
                 break;
             case tipoIdFuncStr:
+                printf("(%d) %s->pSimb->tipoRetNovo=%d (%s)\n", n, var, tn->pSimb->tipoRetNovo, sTipoDado[tn->pSimb->tipoRetNovo]);
                 printf("(%d) %s->pSimb->idFunc=%s\n", n, var, tn->pSimb->idFunc);
                 printf("(%d) %s->pSimb->sfunc=%u\n", n, var, tn->pSimb->sfunc);
                 break;
             case tipoIdFuncVoid:
+                printf("(%d) %s->pSimb->tipoRetNovo=%d (%s)\n", n, var, tn->pSimb->tipoRetNovo, sTipoDado[tn->pSimb->tipoRetNovo]);
                 printf("(%d) %s->pSimb->idFunc=%s\n", n, var, tn->pSimb->idFunc);
                 printf("(%d) %s->pSimb->vfunc=%u\n", n, var, tn->pSimb->vfunc);
                 break;
@@ -662,11 +927,14 @@ void printNodo(nodo *tn, int n, char *var)
     }
     else //tipoOper
     {
-        printf("----------------------------\n");
-        printf("(%d) %s->opr.oper=%d", n, var, tn->opr.oper);
-        printf(" (%s)\n", token(tn->opr.oper));
-        printf("(%d) %s->opr.tipoBOper=%d (%s)\n", n, var, tn->opr.tipoBOper, nome);
-        printf("(%d) %s->opr.nops=%d\n", n, var, tn->opr.nops);
+        if(tn->opr.oper!='l')
+        {
+            printf("----------------------------\n");
+            printf("(%d) %s->opr.oper=%d", n, var, tn->opr.oper);
+            printf(" (%s)\n", token(tn->opr.oper));
+            printf("(%d) %s->opr.tipoBOper=%d (%s)\n", n, var, tn->opr.tipoBOper, nome);
+            printf("(%d) %s->opr.nops=%d\n", n, var, tn->opr.nops);
+        }
         if(tn->opr.nops>0)
             printNodo(tn->opr.ptn[0], n+1, "ptn[0]");
         if(tn->opr.nops>1)
@@ -675,6 +943,24 @@ void printNodo(nodo *tn, int n, char *var)
             printNodo(tn->opr.ptn[2], n+1, "ptn[2]");
         if(tn->opr.nops>3)
             printNodo(tn->opr.ptn[3], n+1, "ptn[3]");
+
+    }
+}
+
+int variavelT(int t)
+{
+    switch(t)
+    {
+        case tipoIdInt:
+        case tipoIdDouble:
+        case tipoIdStr:
+        case tipoIdPointInt:
+        case tipoIdPointDouble:
+        case tipoIdPointStr:
+            return 1;
+        case tipoIdUndef:  //variavel ou funcao ainda sem tipo
+        default:
+            return 0;
     }
 }
 
@@ -682,16 +968,59 @@ int variavel(nodo *p)
 {
     if(p->tipoN==tipoOper)
         return 0;
+    variavelT(p->pSimb->tipoD);
+}
+
+int ponteiro(nodo *p)
+{
+    if(p->tipoN==tipoOper)
+        return 0;
 
     switch(p->pSimb->tipoD)
     {
-        case tipoIdInt:
-        case tipoIdFloat:
-        case tipoIdStr:
+        case tipoIdPointInt:
+        case tipoIdPointDouble:
+        case tipoIdPointStr:
             return 1;
-        case tipoIdIndef:  //variavel ou funcao ainda sem tipo
+        case tipoIdUndef:
         default:
             return 0;
+    }
+}
+
+int pegaTipoBaseT(int t)
+{
+    switch(t)
+    {
+        case tipoConInt:
+        case tipoIdInt:
+        case tipoIdFuncInt:
+        case tipoIdPointInt:
+            return tipoInt; //------------ tipoInt
+        case tipoConDouble:
+        case tipoIdDouble:
+        case tipoIdFuncDouble:
+      //  case tipoIdFuncDouble:
+        case tipoIdPointDouble:
+            return tipoDouble; //---------- tipoDouble
+        case tipoConStr:
+        case tipoIdStr:
+        case tipoIdFuncStr:
+        case tipoIdPointStr:
+            return tipoStr; //------------ tipoStr
+/*        case tipoIdPointInt:
+            return tipoPointInt; //---------- tipoPointInt
+        case tipoIdPointDouble:
+            return tipoPointDouble; //---------- tipoPointDouble
+        case tipoIdPointStr:
+            return tipoPointStr; //---------- tipoPointStr*/
+        case tipoIdFuncVoid:
+            return tipoVoid; //----------- tipoVoid
+        case tipoIdFuncChar:
+        case tipoIdFuncPVoid:
+        case tipoIdUndef:
+        default:
+            return tipoUndef; //------------ tipoUndef
     }
 }
 
@@ -699,36 +1028,15 @@ int pegaTipoBase(nodo *p)
 {
 
     if(!p)
-        return tipoIndef;
+        return tipoUndef;
 
     if(p->tipoN==tipoOper)
         return (p->opr.tipoBOper);
 
     if(!p->pSimb)
-        return tipoIndef;
+        return tipoUndef;
 
-    switch(p->pSimb->tipoD)
-    {
-        case tipoConInt:
-        case tipoIdInt:
-        case tipoIdFuncInt:
-            return tipoInt; //------------ tipoInt
-        case tipoConFloat:
-        case tipoIdFloat:
-        case tipoIdFuncFloat:
-        case tipoIdFuncDouble:
-            return tipoFloat; //------------ tipoFloat
-        case tipoConStr:
-        case tipoIdStr:
-        case tipoIdFuncStr:
-            return tipoStr; //------------ tipoStr
-        case tipoIdFuncChar:
-        case tipoIdFuncVoid:
-        case tipoIdFuncPVoid:
-        case tipoIdIndef:
-        default:
-            return tipoIndef; //------------ tipoIndef
-    }
+    return (pegaTipoBaseT(p->pSimb->tipoD));
 }
 
 char *nomeTipo(nodo *p)
@@ -736,9 +1044,17 @@ char *nomeTipo(nodo *p)
     if(!p)
         return(strdup("(null)"));
     if(p->tipoN==tipoSimb)
+    {
+        //if(debug) printf("debug nodoTipo tipoD=%d\n",p->pSimb->tipoD);
         return(strdup(sTipoDado[p->pSimb->tipoD]));
+        //if(debug) printf("debug nodoTipo tipoD=%d depois\n",p->pSimb->tipoD);
+    }
     else /* tipoOper */
+    {
+        //if(debug) printf("debug nodoTipo tipoBOper=%d\n",p->opr.tipoBOper);
         return(strdup(sTipoBase[p->opr.tipoBOper]));
+        //if(debug) printf("debug nodoTipo tipoBOper=%d depois\n",p->opr.tipoBOper);
+    }
 }
 
 char *token(int tk)
@@ -761,16 +1077,10 @@ char *token(int tk)
             return(strdup("INICIO"));
         case FIM:
             return(strdup("FIM"));
-        case IMPRIMA:
-            return(strdup("IMPRIMA"));
-        case LEIA:
-            return(strdup("LEIA"));
         case ENQUANTO:
             return(strdup("ENQUANTO"));
         case ABORTE:
             return(strdup("ABORTE"));
-        case SAIA:
-            return(strdup("SAIA"));
         case PARA:
             return(strdup("PARA"));
         case INT:
@@ -813,6 +1123,16 @@ char *token(int tk)
             return(strdup("UMENOS"));
         case FUNC:
             return(strdup("FUNC"));
+        case PONT:
+            return(strdup("PONT"));
+        case UPONT:
+            return(strdup("UPONT"));
+        case UEND:
+            return(strdup("UEND"));
+        case INCPRE:
+            return(strdup("INCPRE"));
+        case INCPOS:
+            return(strdup("INCPOS"));
         default:
             return(strdup("default"));
     }

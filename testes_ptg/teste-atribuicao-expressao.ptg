@@ -1,0 +1,33 @@
+// Compilador PORTUGOL v.3q
+// Autor: Ruben Carlo Benante
+// Email: benante@gmail.com
+// Data: 24/05/2009
+//
+// teste atribuicao como expressao. Exemplos a = (b=1);
+
+//comentario
+inicio; //inicio
+int i;
+int j;
+int k;
+real r;
+real s;
+texto t;
+texto u;
+
+i=j=k=3;
+r=s=2.1;
+t=u="aaa";
+
+imprima("i:%d ", i);
+imprima("j:%d ", j);
+imprima("k:%d\n", k);
+imprima("r:%f ", r);
+imprima("s:%f\n", s);
+imprima("t:%s ", t);
+imprima("u:%s\n", u);
+
+fim;
+
+
+

@@ -1,10 +1,10 @@
 %{
 /*
-    Compilador PORTUGOL v.2q
+    Compilador PORTUGOL v.3q
     Autor: Ruben Carlo Benante
     Email: benante@gmail.com
     Data criação: 23/04/2009
-    Data modificação: 24/05/2009
+    Data modificação: 25/05/2009
 */
 
   #include <math.h>
@@ -12,8 +12,23 @@
   #include "portugol.h"
   #include "y.tab.h"
 
+  extern int scanf(const char *, ...); //bug2-----------
   FILE *fhead=NULL;
 %}
+
+
+LE [A-Za-zÁÉÍÓÚÀÈÌÒÙÃẼĨÕŨÂÊÎÔÛÄËÏÖÜÇÑáéíóúàèìòùãẽĩõũâêîôûäëïöüçñºª¹²³]
+DI [0-9]
+BT ("\\"[^%\n])
+AS "\""
+PA "%%"
+PL ("%"({DI}*\.{DI}+)?(d|f|s))
+P1 "%"
+SY [^"%\\\n]
+TU ({LE}|{DI}|{PA}|{BT}|{SY})
+TT ({LE}|{DI}|{P1}|{BT}|{SY})
+FO ({AS}{TU}*{PL}{TU}*{AS})
+TX ({AS}{TT}*{AS})
 
 %%
 
@@ -29,18 +44,16 @@ para     { return PARA; }      /* for */
 int      { return INT; }       /* int */
 real     { return REAL; }      /* float */
 texto    { return TEXTO; }     /*  char* */
+ponteiro { return PONT; }      /* pointer */
 importe  { return IMPORTE; }   /* import double sqrt ( double ) */
 define   { return DEFINE; }    /* define int funcId ( int argId ) */
-"#debug" { return DEBUG; }     /* pre-processor directive */
+#debug   { return DEBUG; }     /* pre-processor directive */
 _ARVORE  { return ARVORE; }    /* turn on print-syntatic-tree option */
-_TABELA   { return TABELA; }   /* turn on print-symbol-table option */
-
- /* funcoes reservadas */
-imprima  { return IMPRIMA; }   /* printf(format,x); format=={"%d", "%.2f", "%s"} */
-leia     { return LEIA; }      /* scanf("%f",&x); */
-saia     { return SAIA; }      /* exit(x) */
+_TABELA  { return TABELA; }    /* turn on print-symbol-table option */
 
  /* Pontuacao */
+"++"    { return INC; }
+"--"    { return DEC; }
 ">="    { return GE; }
 "<="    { return LE; }
 "=="    { return EQ; }
@@ -51,34 +64,42 @@ saia     { return SAIA; }      /* exit(x) */
 "ou"    { return OU; }
 "nao"   { return NAO; }
 
-[-+*/=();%]    { return yytext[0]; }
+[-+*/=();%,&]    { return yytext[0]; }
 
  /* Identificadores */
-[a-zA-Z][a-zA-Z0-9_]*      {    tabelaSimb *ps = achaId(yytext);
+ /* [a-zA-Z][a-zA-Z0-9_]*      {    tabelaSimb *ps = achaId(yytext); */
+{LE}({LE}|{DI}|_)*          {    tabelaSimb *ps = achaId(yytext);
                                 yylval.pSimb = ps;
                                 return IDENT;
                             }
 
  /* Constantes */
-[0-9]+"."[0-9]+([eE][+-]?[0-9]+)?   {  tabelaSimb *ps = achaFloat(atof(yytext));
-                                       yylval.pSimb = ps;
-                                       return REALCON;
-                                    }
+{DI}+"."{DI}+([eE][+-]?{DI}+)?   {  tabelaSimb *ps = achaFloat(atof(yytext));
+                                    yylval.pSimb = ps;
+                                    return REALCON;
+                                 }
 
-[0-9]+                { tabelaSimb *ps = achaInt(atoi(yytext));
-                        yylval.pSimb = ps;
-                        return INTCON;
-                      }
+{DI}+       {  tabelaSimb *ps = achaInt(atoi(yytext));
+               yylval.pSimb = ps;
+               return INTCON;
+            }
 
-"\""[^"\n]*"\""     {  tabelaSimb *ps = achaStr(yytext);
-                       yylval.pSimb = ps;
-                       return TEXTOCON;
-                    }
+{FO}        {  tabelaSimb *ps = achaStr(yytext);
+               yylval.pSimb = ps;
+               yylval.pSimb->formatadoSval = 1;
+               return TEXTOCON;
+            }
+
+{TX}        {  tabelaSimb *ps = achaStr(yytext);
+               yylval.pSimb = ps;
+               yylval.pSimb->formatadoSval = 0;
+               return TEXTOCON;
+            }
 
  /* espacos e comentarios */
 \n              { lineno++; }
-[ \t\r]+        ; /* do nothing */
-"//".*          ; /* one-line comments */
+[ \t\r]+        ; /* faz nada */
+"//".*          ; /* "//".*\n ; */
 
  /* Outras coisas */
 .           { yyerror("caracter invalido"); }
@@ -125,13 +146,20 @@ int main(int ac, char **av)
         }
     }
     else
-        fprintf(yyout, "Compilador PORTUGOL versao 2q, por Ruben Carlo Benante (24/05/09).\n");
+        fprintf(yyout, "Compilador PORTUGOL versao 3q, por Ruben Carlo Benante (25/05/09).\n");
 
-    addFuncVoid("imprima", (void *)printf, "printf");
-    addFuncVoid("leia", (void *)scanf, "scanf");
-    addFuncVoid("saia", (void *)exit, "exit");
-    addFuncDouble("raiz", sqrt, "sqrt");
-    addFuncDouble("exp", exp, "exp");
+    //int a=max(2,3);
+    addFuncVoid("imprima", (void *)printf, "printf", 2, tipoIdFuncVoid);  // void printf ( str a , int b );
+    //** addFuncVoid("leia", (void *)scanf, "scanf", 0, tipoIdFuncDouble);   // void scanf ( float &a ); real leia ( void );
+//**addFuncInt("leia", scanf, "scanf", 0, tipoIdFuncDouble);      // int scanf ( float &a ); real leia ( void );
+addFuncInt2("leia", scanf, "scanf", 0, tipoIdFuncDouble);      // bug2-----------int scanf ( float &a ); real leia ( void );
+//    addFuncVoid("leiaI", (void *)scanf, "scanf", 0);   // void scanf ( float &a ); int leiaI ( void );
+//    addFuncVoid("leiaR", (void *)scanf, "scanf", 0);   // void scanf ( float &a ); real leiaR ( void );
+//    addFuncVoid("leiaT", (void *)scanf, "scanf", 0);   // void scanf ( float &a ); texto leiaT ( void );
+    addFuncVoid("saia", (void *)exit, "exit", 1, tipoIdFuncVoid);        // void exit ( int a );
+    addFuncDouble("raiz", sqrt, "sqrt", 1, tipoIdFuncDouble);              // float sqrt ( float a );
+    addFuncDouble("exp", exp, "exp", 1, tipoIdFuncDouble);
+    addFuncDouble("elevado", pow, "pow", 2, tipoIdFuncDouble);
     addConStr("?");
     if(yyparse()) //falhou
     {
@@ -149,20 +177,40 @@ void addConStr(char *s)
     tabelaSimb *ps = achaStr(s);
 }
 
-void addFuncDouble(char *id, double (*func)(), char *idF)
+void addFuncDouble(char *id, double (*func)(), char *idF, int nump, int tp)
 {
-    tabelaSimb *ps = achaId(id); //ps->idNome = strdup(nome);
+    tabelaSimb *ps = achaId(id); //acha ou cria na tabela de simbolos
     ps->dfunc =  func;
+    ps->idFunc = strdup(idF);
+    ps->numPar = nump;
+    ps->tipoRetNovo = tp;
+
     ps->tipoD = tipoIdFuncDouble;
     ps->idx = geraTF();
-    ps->idFunc = strdup(idF);
 }
 
-void addFuncVoid(char *id, void (*func)(), char *idF)
+//bug2--------------
+//addFuncInt("leia", (void *)scanf, "scanf", 0, tipoIdFuncDouble);      // int scanf ( float &a ); real leia ( void );
+void addFuncInt2(char *id, int (*func)(const char *, ...), char *idF, int nump, int tp)
+{
+    tabelaSimb *ps = achaId(id);
+    ps->i2func =  func;
+    ps->idFunc = strdup(idF);
+    ps->numPar = nump;
+    ps->tipoRetNovo = tp;
+
+    ps->tipoD = tipoIdFuncInt;
+    ps->idx = geraTF();
+}
+
+void addFuncVoid(char *id, void (*func)(), char *idF, int nump, int tp)
 {
     tabelaSimb *ps = achaId(id); //idName
     ps->vfunc =  func;
+    ps->idFunc = strdup(idF);
+    ps->numPar = nump;
+    ps->tipoRetNovo = tp;
+
     ps->tipoD = tipoIdFuncVoid;
     ps->idx = geraTF();
-    ps->idFunc = strdup(idF);
 }

@@ -5,27 +5,41 @@
 //
 // se-entao-senao
 
-#debug _TABELA
+//#debug _ARVORE
+//#debug _TABELA
 
 inicio; //inicio
 int A;
-real O;
+real R;
 texto S;
 int B;
-real P;
 
 A=1+1; //atribuicao inteira
 B=1; //repetindo a constante
-O=2.2; //atribuicao flutuante
+R=2.2; //atribuicao flutuante
 S="oi"; //atribuicao string
-;
 B=A;
-P=O;
 ;
-imprima A; //inteiro 1
-se (A==1) entao
-    imprima 2.2;
+R=leia();
+imprima("%f\n",R); //inteiro 1
+R=exp(1.1);
+imprima("%f\n",R);
+R=elevado(2.2 , 3.3);
+imprima("vai:%.1f\n", R);
+imprima("%s\n", "oi!!");
+se (R==1) entao
+    inicio;
+    imprima(":%f:",32.2);
+    saia(1+1);
+    fim;
 senao
-    imprima 1;
-;
+    imprima(":%d:", 89);
+//aborte;
+//saia("2!");
+//R=raiz("e");
+//R=exp("1w");
+real a;
+a=elevado(2,0);
+imprima("%.3f\n\n", a);
+saia(0);
 fim;

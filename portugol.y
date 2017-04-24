@@ -1,10 +1,10 @@
 %{
 /*
-    Compilador PORTUGOL v.2q
+    Compilador PORTUGOL v.3q
     Autor: Ruben Carlo Benante
     Email: benante@gmail.com
     Data criação: 23/04/2009
-    Data modificação: 24/05/2009
+    Data modificação: 25/05/2009
 */
 
 #include <ctype.h>
@@ -15,6 +15,7 @@
 #include "portugol.h"
 
 /* prototipos */
+
 int debugArvore = 0;
 int debugTabela = 0;
 int lineno = 1;
@@ -22,6 +23,7 @@ char msg[80], *tmp;
 int imaxts, imaxtc, imaxtf, imaxtp;
 tabelaSimb *prox;
 extern char *sTipoDado[];
+//extern char *sTipoBase[];
 
 %}
 
@@ -30,22 +32,29 @@ extern char *sTipoDado[];
         nodo *pNodo;            /* tipo do comando e expr */
 };
 
-%token SE ENTAO SENAO INICIO FIM IMPRIMA LEIA ENQUANTO ABORTE SAIA PARA
+%token SE ENTAO SENAO INICIO FIM ENQUANTO ABORTE PARA
 %token INT REAL TEXTO DEFINE IMPORTE FUNC
 %token DEBUG ARVORE TABELA
+%token INC DEC INCPOS INCPRE DECPOS DECPRE
+%token PONT UPONT UEND PONTI PONTR PONTS PATTRIB
 %token <pSimb> IDENT INTCON REALCON TEXTOCON
 
+%left INCPOS
 %left OU
 %left E
 %left NAO
 %left GE LE EQ NE GT LT
+%left '='
 %left '+' '-'
 %left '*' '/' '%'
+%left INCPRE
+%nonassoc UPONT
+%nonassoc UEND
 %nonassoc UMENOS
 %nonassoc ENTAO
 %nonassoc SENAO
 
-%type <pNodo> comando expr lista_comandos bloco_comandos
+%type <pNodo> comando expr lista_comandos bloco_comandos funcao
 
 %%
 
@@ -67,7 +76,7 @@ programa:
                                 {
                                     case tipoIdFuncInt:
                                         fprintf(yyout, "tipoRetFuncInt;\n");
-                                        fprintf(yyout, "  tf[%d].ifunc=%s;\n", prox->idx, prox->idFunc);
+                                        fprintf(yyout, "  tf[%d].i2func=%s;\n", prox->idx, prox->idFunc); //bug2--------
                                         break;
                                     case tipoIdFuncFloat:
                                         fprintf(yyout, "tipoRetFuncFloat;\n");
@@ -98,7 +107,6 @@ programa:
                             fprintf(yyout, "{\n  filltf();\n\n");
                             gera_quad($1,0);
                             liberaNodo($1);
-
                             imaxts=geraTS();
                             imaxtc=geraTC();
                             imaxtf=geraTF();
@@ -145,14 +153,15 @@ comando:
         | INT IDENT ';'         { $$ = opr(INT, 1, conv($2)); }
         | REAL IDENT ';'        { $$ = opr(REAL, 1, conv($2)); }
         | TEXTO IDENT ';'       { $$ = opr(TEXTO, 1, conv($2)); }
+        | PONT INT IDENT ';'    { $$ = opr(PONTI, 1, conv($3)); }
+        | PONT REAL IDENT ';'   { $$ = opr(PONTR, 1, conv($3)); }
+        | PONT TEXTO IDENT ';'  { $$ = opr(PONTS, 1, conv($3)); }
+        //| IMPORTE REAL IDENT '(' REAL ')' ';' { $$ = opr(IMPORTE, 1, conv($3)); }
         | SE '(' expr ')' ENTAO comando                  { $$ = opr(SE, 2, $3, $6); }
         | SE '(' expr ')' ENTAO comando SENAO comando    { $$ = opr(SE, 3, $3, $6, $8); }
         | ENQUANTO '(' expr ')' comando                  { $$ = opr(ENQUANTO, 2, $3, $5); }
         | PARA '(' comando expr ';' comando ')' comando  { $$ = opr(PARA, 4, $3, $4, $6, $8); }
         | ABORTE ';'                                     { $$ = opr(ABORTE, 0); }
-        | IMPRIMA expr ';'                               { $$ = opr(IMPRIMA, 1, $2); }
-        | LEIA IDENT ';'                                 { $$ = opr(LEIA, 1, conv($2)); }
-        | SAIA expr ';'                                  { $$ = opr(SAIA, 1, $2); }
         | bloco_comandos                                 { $$ = $1; }
         ;
 
@@ -162,7 +171,16 @@ expr:
     | TEXTOCON                  { $$ = conv($1); }
     | IDENT                     { $$ = conv($1); }
     | IDENT '=' expr            { $$ = opr('=', 2, conv($1), $3); }
-    | IDENT '(' expr ')'        { $$ = opr(FUNC, 2, conv($1), $3); }
+    | '*' IDENT '=' expr        { $$ = opr(PATTRIB, 2, conv($2), $4); }
+//incremento decremento
+    | IDENT INC                 { $$ = opr(INCPOS, 1, conv($1)); }
+    | INC IDENT                 { $$ = opr(INCPRE, 1, conv($2)); }
+    | IDENT DEC                 { $$ = opr(DECPOS, 1, conv($1)); }
+    | DEC IDENT                 { $$ = opr(DECPRE, 1, conv($2)); }
+//  Ponteiros
+    | '*' IDENT %prec UPONT     { $$ = opr(UPONT, 1, conv($2)); }
+    | '&' IDENT %prec UEND      { $$ = opr(UEND, 1, conv($2)); }
+// Expressoes matematicas e logicas
     | '-' expr %prec UMENOS     { $$ = opr(UMENOS, 1, $2); }
     | expr '+' expr             { $$ = opr('+', 2, $1, $3); }
     | expr '-' expr             { $$ = opr('-', 2, $1, $3); }
@@ -179,9 +197,37 @@ expr:
     | expr OU expr              { $$ = opr(OU, 2, $1, $3); }
     | NAO expr                  { $$ = opr(NAO, 1, $2); }
     | '(' expr ')'              { $$ = opr('(', 1, $2); }
+    | funcao                    { $$ = $1; }
     ;
 
+
+funcao:
+    IDENT '(' ')'                       { $$ = opr(FUNC, 1, conv($1)); }
+    | IDENT '(' expr ')'                { $$ = opr(FUNC, 2, conv($1), $3); }
+    | IDENT '(' expr ',' expr ')'       { $$ = opr(FUNC, 3, conv($1), $3, $5); }
+    ;
 %%
+
+/* Acha (nao cria) Id pelo seu IDX */
+tabelaSimb *achaIdx(int i)
+{
+    char *p;
+    tabelaSimb *ps;
+    int t1;
+
+    if(i==-1)
+        return NULL;
+
+    for(ps=tabSimb; ps < &tabSimb[MAX_SIMB]; ps++)
+    {
+//        if(ps->idNome && ps->idx==i && ps->tipoD!=tipoIndef && ps->tipoD!=tipoVoid) /* encontrou ? */
+//        if(ps->idNome && ps->idx==i && (varips->tipoD==tipoIdInt || ps->tipoD==tipoIdFloat || ps->tipoD==tipoIdStr || ps->tipoD==tipoIdPointInt || ps->tipoD==tipoIdPointFloat || ps->tipoD==tipoIdPointStr )) /* encontrou ? */
+        if(ps->idNome && ps->idx==i && variavelT(ps->tipoD)) /* encontrou ? */
+            return ps; /* sim ! */
+    }
+    //printf("achaIDX nao achou!!\n");
+    return NULL;
+}
 
 /* Acha/cria ID e retorna o ponteiro para a tabelaSimb */
 tabelaSimb *achaId(char *nome)
