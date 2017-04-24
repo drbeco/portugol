@@ -2,55 +2,42 @@
 // Autor: Ruben Carlo Benante
 // Email: benante@gmail.com
 // Data: 26/05/2009
-//
-// Calcula o fatoria de um n dado
-
-//#debug _ARVORE
-//#debug _TABELA
-
-// extern printf(int);
-// float nada(void)
-// {
-//   return 1.0;
-// }
-// int main(void)
-// {
-//   nada();
-// }
-
 //externa inteiro printf(texto, inteiro);
+
+real fator(nada)
+inicio;
+    inteiro i;
+    i=2;
+    imprima("inteiro recebido: %d\n", i);
+fim;
 
 real olha(nada)
 inicio;
     real u;
     u=5.5;
-    retorne u+1.1;
+    retorne u+1.0;
 fim;
 
-real veja(nada)
+nada veja(nada)
 inicio;
     real m;
     m=5.5;
-    retorne 1.1+2.2;
+    retorne 1.0+2.2;
 fim;
 
-//comentario
-
 inteiro principal(nada)
-inicio; //inicio
-
+inicio;
     real o;
-    real i;
-    real n;
+    real u;
 
-
-    //saia(1);
-    o=2.551;
+    fator();
+    o=2.2;
     imprima("digite um numero %f\n", o);
     leia("%f", o);
-    imprima("Num: %f\n", o);
-    o=3.441;
-    imprima("Num: %f\n", o);
+    imprima("%f\n", o);
+    o=veja();
+    imprima("o=veja(): %f\n", o);
+
     se(o<0.0) entao
     inicio;
         imprima("%s\n","erro: numero negativo!");
@@ -62,12 +49,12 @@ inicio; //inicio
             imprima("%f\n",1.0); // bug! loadd(tc[13] nunca acontece, e a constante 1.0 fica supostamente definida
             saia(0);
         fim;
-    para(i=1.0; i<3.0; i=i-1.0) // constante 1.0 faz i ficar indefinido
+
+    para(u=1.0; u<5.5; u=u+1.0) // constante 1.0 faz i ficar indefinido
     inicio;
-        o=i+i;
-        imprima("i: %f\n", i);
+        //real u;
+        o=u;
+        imprima("%f\n", o);
     fim;
-    imprima("Fatorial: %.2f\n",o);
-    //   r=fat;
     retorne 1;
 fim;

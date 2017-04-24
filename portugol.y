@@ -20,12 +20,13 @@
 int debugArvore = 0;
 int debugTabela = 0;
 int lineno = 1;
-char msg[80], *tmp;
-int imaxts, imaxtc, imaxtf, imaxtp;
-tabelaSimb *prox;
+char msg[120], *tmp;
+//int imaxts, imaxtc, imaxtf, imaxtp;
+tabelaSimb *ps;
 extern char *sTipoDado[];
 //extern char *sTipoBase[];
 int ta[MAX_PARAM];
+extern int indente;
 
 %}
 
@@ -35,13 +36,13 @@ int ta[MAX_PARAM];
         int intval;             /* valor do token para um dado tipo */
 };
 
-%token PRINCIPAL SE ENTAO SENAO INICIO FIM ENQUANTO ABORTE PARA RETORNE
+%token SE ENTAO SENAO INICIO FIM ENQUANTO ABORTE PARA RETORNE
 %token INT REAL TEXTO NADA FUNCAO EXTERNA FUNC DEFINE
 %token DEBUG ARVORE TABELA
 %token INC DEC INCPOS INCPRE DECPOS DECPRE
 %token PONT UPONT UEND PATTRIB
 %token PONTI PONTR PONTS
-%token <pSimb> IDENT INTCON REALCON TEXTOCON
+%token <pSimb> IDENT INTCON REALCON TEXTOCON PRINCIPAL
  /* %token VAZIO */
 
 %left INCPOS
@@ -60,37 +61,33 @@ int ta[MAX_PARAM];
 %nonassoc SENAO
 
 %type <pNodo> comando expr lista_comandos bloco_funcoes funcao principio constante subordinados_comandos retornar conjunto blocos
-%type <intval> tipo
- /*preprocs*/
+%type <pNodo> funcaoexterna lista_funcaoexterna lista_tipos meio_vtipos
+%type <intval> vtipo ftipo
+//%type <pNodo> declaracao
+//%type <pNodo> lista_declaracao meio_declaracao
+//%type <pNodo> lista_args meio_args
+//%type <pNodo> lista_expr meio_expr
+
 %%
 
 programa:
     conjunto              {
                             //fprintf(yyout, "//    Gerado pelo compilador Portugol versao 3r\n");
-                            //fprintf(yyout, "//    Autor: Ruben Carlo Benante\n");
-                            //fprintf(yyout, "//    Email: rcb@beco.cc\n");
-                            //fprintf(yyout, "//    Data: 23/05/2009, 10/03/2011\n");
-                            //fprintf(yyout, "//    Compilado em: %s as %s\n\n", __DATE__, __TIME__);
-                            cabecalhoMain[0]='\0';
-                            strcpy(cabecalhoMain, "  loadfunc(tipoVoid, (void *)printf, \"imprima\", &tf[0], 2); /* funcao predefinida */\n  loadfunc(tipoVoid, (void *)scanf, \"leia\", &tf[1], 2); /* funcao predefinida */\n");
-                            strcat(cabecalhoMain, "  loadfunc(tipoVoid, (void *)exit, \"saia\", &tf[2], 1); /* funcao predefinida */\n  loadfunc(tipoDouble, (void *)sqrt, \"raiz\", &tf[3], 1); /* funcao predefinida */\n");
-                            //                 qres->dval=(*tf[idx].dfunc)(g[0]->dval); //sqrt(dval)
-                            //addFunc("saia", (void *)exit, "exit" /*similar em c*/, 1/*num param*/, tipoIdFuncInt /*tipo de retorno e na TS*/, tipoConInt /*tipo arg*/);
-                            //adiciona, substitui, ou cria! Criado por achaId
-                            ta[0]=tipoStr;
-                            ta[1]=tipoDouble;
-                            addFunc("imprima", (void *)printf, "printf", 2, tipoIdFuncVoid, ta);
-                            ta[0]=tipoStr;
-                            ta[1]=tipoDouble;
-                            addFunc("leia", (void *)scanf, "scanf", 2, tipoIdFuncVoid, ta);
-                            ta[0]=tipoInt;
-                            addFunc("saia", (void *)exit, "exit", 1, tipoIdFuncVoid, ta);
-                            ta[0]=tipoDouble;
-                            addFunc("raiz", (void *)sqrt, "sqrt", 1, tipoIdFuncDouble, ta);
-                            tipoRet=tipoUndef; /*escopo da funcao atual*/
-                            //fprintf(stderr, "gera_quad antes\n");
-                            pass1($1, 0);
-                            gera_quad($1,0);
+                            carregaFuncoesPreTS();
+                            //void printNodo(nodo *tn, int n, char *var)
+                            printNodo($1, 0, "$1");
+                            //printf("->opr.oper='%s'\n", token($1->opr.ptn[0]->opr.oper));
+                            if($1->opr.ptn[0]!=NULL);
+                                printf("->opr.oper=%d\n", $1->opr.ptn[0]->opr.oper);
+
+                            fprintf(stderr, "pass 2... (geracao de arvore de escopo)\n");
+                            exit(0);
+                            pass2($1, &esco, 0); //novo passo, para retirar informacoes de indentacao e escopo
+                            fprintf(stderr, "pass 3... (analise semantica e geracao de codigo)\n");
+                            pass3($1,0); //pass3, geracao de codigo
+                            //printTS();
+                            fprintf(stderr, "pass 1, pass 2, pass 3. Compilado com sucesso\n");
+                            //pass3c($1,0); //pass3, geracao de codigo
                             //fprintf(stderr, "gera_quad depois: saida.h\n");
                             liberaNodo($1);
                             return 0;
@@ -99,8 +96,7 @@ programa:
 
 
 conjunto:
-     preprocs blocos principio             { $$ = opr(INICIO, 2, $2, $3); }
-/*      preprocs blocos                      { $$ = opr(INICIO, 1, $2); } */
+     preprocs lista_funcaoexterna blocos principio             { $$ = opr(INICIO, 2, $2, $3); }
      ;
 
 preprocs: /* nada */
@@ -113,45 +109,46 @@ preproc:
         | DEBUG TABELA                    { debugTabela = 1; }
         ;
 
-blocos: /* nada */                        { $$ = NULL; /*opr(VAZIO, 0);*/ }
+blocos: /* nada */                        { $$ = NULL; }
     | blocos bloco_funcoes
-                                          {
-                                            $$ = opr('l', 2, $1, $2);
-                                            //fprintf(yyout, "  nop(NULL,NULL,NULL);\t/* 160.y no operation */\n}\n"); /* fecha chave do main */
-                                          } /* l para lista de comandos */
+                                          { $$ = opr('l', 2, $1, $2); }
     ;
 
 bloco_funcoes:
-    tipo IDENT '(' tipo ')' INICIO ';' lista_comandos FIM ';'
-                          {
-                            //fprintf(stderr, "tipo%d %s ( tipo%d );\n", $1, $2->idNome, $4 );
-                            $$ = opr($1, 3, conv($2), convtn($4), $8);  /* como comparar o retorno com o tipo? comparar tipo $1 com $9*/
-                            //fprintf(yyout, "  nop(NULL,NULL,NULL);\t/* no operation */\n} /* close function */\n"); /* fecha chave da funcao */
-                          } /* nop()\n} */
-    | tipo IDENT '(' tipo ',' tipo ')' INICIO ';' lista_comandos FIM ';'
-                          {
-                            $$ = opr($1, 4, conv($2), convtn($4), convtn($6), $10);
-                            //fprintf(yyout, "  nop(NULL,NULL,NULL);\t/* no operation */\n} /* close function */\n"); /* fecha chave da funcao */
-                          } /* nop()\n} */
-    | tipo IDENT '(' tipo ',' tipo ',' tipo ')' INICIO ';' lista_comandos FIM ';'
-                          {
-                            $$ = opr($1, 5, conv($2), convtn($4), convtn($6), convtn($8), $12);
-                            //fprintf(yyout, "  nop(NULL,NULL,NULL);\t/* no operation */\n} /* close function */\n"); /* fecha chave da funcao */
-                          } /* nop()\n} */
+    ftipo IDENT '(' NADA ')' INICIO ';' lista_comandos FIM ';'
+                                    { $$ = opr($1, 2, conv($2), $8); }
+    | ftipo IDENT '(' vtipo IDENT ')' INICIO ';' lista_comandos FIM ';'
+                                    { $$ = opr($1, 4, conv($2), convtn($4), conv($5), $9); }
+    | ftipo IDENT '(' vtipo IDENT ',' vtipo IDENT ')' INICIO ';' lista_comandos FIM ';'
+                                    { $$ = opr($1, 6, conv($2), convtn($4), conv($5), convtn($7), conv($8), $12); }
+    | ftipo IDENT '(' vtipo IDENT ',' vtipo IDENT ',' vtipo IDENT ')' INICIO ';' lista_comandos FIM ';'
+                                    { $$ = opr($1, 8, conv($2), convtn($4), conv($5), convtn($7), conv($8), convtn($10), conv($11), $15); }
+/*     | ftipo IDENT '(' declaracao ')' INICIO ';' lista_comandos FIM ';' */
+/*                                     { $$ = opr($1, 3, conv($2), $4, $8); } */
+/*     | ftipo IDENT '(' declaracao ',' declaracao ')' INICIO ';' lista_comandos FIM ';' */
+/*                                     { $$ = opr($1, 4, conv($2), $4, $6, $10); } */
+/*     | ftipo IDENT '(' declaracao ',' declaracao ',' declaracao ')' INICIO ';' lista_comandos FIM ';' */
+/*                                     { $$ = opr($1, 5, conv($2), $4, $6, $8, $12); } */
+//    | ftipo IDENT '(' lista_args ')' INICIO ';' lista_comandos FIM ';'
+//                                    { $$ = opr($1, 3, conv($2), $4, $8); }
     ;
 
 principio:
-    INT PRINCIPAL '(' tipo ')' INICIO ';' lista_comandos FIM ';'
-                          {
-                            //fprintf(stderr, "linha 183.y : int main(void)\n");
-                            /*fprintf(yyout, "{\n  filltf();\n\n");*/
-                            $$ = opr(INT, 2, convtn($4), $8);
-                          }
+   INT PRINCIPAL '(' NADA ')' INICIO ';' lista_comandos FIM ';'
+                                    { $$ = opr(PRINCIPAL, 2, conv($2), $8); }
+    | INT PRINCIPAL '(' vtipo IDENT ')' INICIO ';' lista_comandos FIM ';'
+                                    { $$ = opr(PRINCIPAL, 4, conv($2), convtn($4), conv($5), $9); }
+    | INT PRINCIPAL '(' vtipo IDENT ',' vtipo IDENT ')' INICIO ';' lista_comandos FIM ';'
+                                    { $$ = opr(PRINCIPAL, 6, conv($2), convtn($4), conv($5), convtn($7), conv($8), $12); }
+/*     | INT PRINCIPAL '(' declaracao ')' INICIO ';' lista_comandos FIM ';' */
+/*                                     { $$ = opr(PRINCIPAL, 3, conv($2), $4, $8); } */
+/*     | INT PRINCIPAL '(' declaracao ',' declaracao ')' INICIO ';' lista_comandos FIM ';' */
+/*                                     { $$ = opr(PRINCIPAL, 4, conv($2), $4, $6, $10); } */
     ;
 
 retornar:
-    RETORNE ';'                 {$$ = opr(RETORNE, 0); }
-    | RETORNE expr ';'          {$$ = opr(RETORNE, 1, $2); }
+    RETORNE ';'                 { $$ = opr(RETORNE, 0); }
+    | RETORNE expr ';'          { $$ = opr(RETORNE, 1, $2); }
     ;
 
 lista_comandos:
@@ -160,41 +157,22 @@ lista_comandos:
     ;
 
 subordinados_comandos:
-    comando                             {$$ = $1; }
-    | INICIO ';' lista_comandos FIM ';' {$$ = $3; }
+    comando                             { $$ = $1; }
+    | INICIO ';' lista_comandos FIM ';' { $$ = $3; }
+    ;
 
 comando:
-        ';' /* nop ; */         { $$ = opr(';', 2, NULL, NULL); }
-        | expr ';'              { $$ = $1; }
-        /*| INT IDENT ';'         { $$ = opr(INT, 1, conv($2)); }
-        | REAL IDENT ';'        { $$ = opr(REAL, 1, conv($2)); }
-        | TEXTO IDENT ';'       { $$ = opr(TEXTO, 1, conv($2)); }
-        | PONT INT IDENT ';'    { $$ = opr(PONTI, 1, conv($3)); }
-        | PONT REAL IDENT ';'   { $$ = opr(PONTR, 1, conv($3)); }
-        | PONT TEXTO IDENT ';'  { $$ = opr(PONTS, 1, conv($3)); }*/
-        | tipo IDENT ';'             { $$ = opr($1, 1, conv($2)); }
-        /* | PONT tipo IDENT ';'        { $$ = opr(PONTI, 2, $2, conv($3)); } */
-        /*| INT IDENT '(' ')' ';'         { $$ = opr(INT, 1, conv($2)); }
-        | REAL IDENT '(' ')' ';'        { $$ = opr(REAL, 1, conv($2)); }
-        | TEXTO IDENT '(' ')' ';'       { $$ = opr(TEXTO, 1, conv($2)); }
-        | PONT INT IDENT '(' ')' ';'    { $$ = opr(PONTI, 1, conv($3)); }
-        | PONT REAL IDENT '(' ')' ';'   { $$ = opr(PONTR, 1, conv($3)); }
-        | PONT TEXTO IDENT '(' ')' ';'  { $$ = opr(PONTS, 1, conv($3)); }*/
-        //| IMPORTE REAL IDENT '(' REAL ')' ';' { $$ = opr(IMPORTE, 1, conv($3)); }
+        ';' /* nop ; */                                                           { $$ = opr(';', 2, NULL, NULL); }
+        | expr ';'                                                                { $$ = $1; }
+        | vtipo IDENT';'                                                          { $$ = opr($1, 1, conv($2)); }
+//        | declaracao ';'                                                          { $$=$1; }
+//        | lista_declaracao ';'                                                    { $$=$1; } //$$ = opr($1, 1, conv($2)); }
         | ABORTE ';'                                                              { $$ = opr(ABORTE, 0); }
         | SE '(' expr ')' ENTAO subordinados_comandos                             { $$ = opr(SE, 2, $3, $6); }
         | SE '(' expr ')' ENTAO subordinados_comandos SENAO subordinados_comandos { $$ = opr(SE, 3, $3, $6, $8); }
         | ENQUANTO '(' expr ')' subordinados_comandos                             { $$ = opr(ENQUANTO, 2, $3, $5); }
-        // | PARA '(' comando expr ';' comando ')' comando  { $$ = opr(PARA, 4, $3, $4, $6, $8); }
         | PARA '(' expr ';' expr ';' expr ')' subordinados_comandos               { $$ = opr(PARA, 4, $3, $5, $7, $9); }
         | retornar                                                                { $$ = $1; }
-        /* defuncoes: */
-        /* | defuncao               { $$ = $1; } */
-        /* | defuncoes defuncao     { $$ = opr('f', 2, $1, $2); }  f para lista de comandos */
-        /* |  nada */
-        /* | funcao                                         { $$ = opr(FUNC,  ---> esta em expr*/
-        /* | bloco_comandos                                 { $$ = $1; } */
-        /* | lista_comandos                                 { $$ = $1; } */
         ;
 
 expr:
@@ -230,57 +208,83 @@ expr:
     | funcao                    { $$ = $1; }
     ;
 
-tipo:
+ftipo:
+    vtipo                       { $$ = $1;    }
+    | NADA                      { $$ = NADA;  }
+    ;
+
+vtipo:
     INT                         { $$ = INT;   }
     | REAL                      { $$ = REAL;  }
     | TEXTO                     { $$ = TEXTO; }
     | PONT INT                  { $$ = PONTI; }
     | PONT REAL                 { $$ = PONTR; }
     | PONT TEXTO                { $$ = PONTS; }
-    | NADA                      { $$ = NADA;  }
     ;
+
+lista_tipos:
+    NADA                        { $$ = convtn(NADA); }
+    | meio_vtipos vtipo         { $$ = opr('l', 2, $1, $2); }
+    ;
+
+meio_vtipos: /* vazio */        { $$ = NULL; }
+    | meio_vtipos vtipo ','     { $$ = opr('l', 2, $1, $2); }
+    ;
+
+/*declaracao:
+    vtipo IDENT                 { $$ = opr($1, 1, conv($2)); }
+    ;*/
+
+/*lista_args:
+    NADA                        { $$ = convtn(NADA); }
+    | meio_args declaracao      { $$ = opr('l', 2, $1, $2); }
+    ;
+
+meio_args: / vazio /          { $$ = NULL; }
+    | meio_args declaracao ','  { $$ = opr('l', 2, $1, $2); }
+    ;*/
+
+/* lista_declaracao:
+    vtipo meio_declaracao IDENT  { $$ = opr('l', 2, $1, conv($2); }
+    ;
+
+meio_declaracao: / vazio /    { $$ =  NULL; }
+    | meio_declaracao IDENT ',' { $$ = opr('l', 2, $1, conv($2); }
+    ;*/
 
 constante:
-    INTCON                      { $$ = conv($1); }
-    | REALCON                   { $$ = conv($1); }
-    | TEXTOCON                  { $$ = conv($1); }
+    INTCON                         { $$ = conv($1); }
+    | REALCON                      { $$ = conv($1); }
+    | TEXTOCON                     { $$ = conv($1); }
     ;
 
+  /* definicao do prototipo da funcao */
+/*  sprintf(cabecalhoMain, "%s  loadfunc(tipoVoid, (void *)printf, \"imprima\", &tf[%d], 2);\n", cabecalhoMain, ps->idx); */
+funcaoexterna:
+    EXTERNA ftipo IDENT '(' lista_tipos ')' ';'  { $$ = opr(EXTERNA, 3, convtn($2), conv($3), $5); }
+    ;
 
-    /* definicao do prototipo da funcao */
-/* funcaoexterna:
-    | EXTERNA tipo IDENT '(' tipo ')' ';'              { $$ = opr(EXTERNA, 3, $2, conv($3), $5); }
-    | EXTERNA tipo IDENT '(' tipo ',' tipo ')' ';'   { $$ = opr(EXTERNA, 4, $2, conv($3), $5, $7); }
+lista_funcaoexterna: /* vazio */            { $$ = NULL; }
+    | lista_funcaoexterna funcaoexterna     { $$ = opr('l', 2, $1, $2); }
     ;
-*/
-
- /*defuncaoargs:
-    tipo IDENT '(' lista_args ')' ';'
-    ;
- lista_args:
-    | lista_arg1
-    |
-    ;
- lista_arg1:
-    tipo
-    | tipo ',' lista_arg1                    { $$ = opr($ ??????
-    ; */
 
  /* chamada da funcao */
 funcao:
-    IDENT '(' ')'                            { $$ = opr(FUNC, 1, conv($1)); }
-    | IDENT '(' expr ')'                     { $$ = opr(FUNC, 2, conv($1), $3); }
-    | IDENT '(' expr ',' expr ')'            { $$ = opr(FUNC, 3, conv($1), $3, $5); }
-    | IDENT '(' expr ',' expr ',' expr ')'   { $$ = opr(FUNC, 4, conv($1), $3, $5, $7); }
+    IDENT '(' ')'                           { $$ = opr(FUNC, 1, conv($1)); }
+    | IDENT '(' expr ')'                    { $$ = opr(FUNC, 2, conv($1), $3); }
+    | IDENT '(' expr ',' expr ')'           { $$ = opr(FUNC, 3, conv($1), $3, $5); }
+    | IDENT '(' expr ',' expr ',' expr ')'  { $$ = opr(FUNC, 4, conv($1), $3, $5, $7); }
+/*     IDENT '(' lista_expr ')'              { $$ = opr(FUNC, 2, conv($1), $3); } */
     ;
+
 %%
 
-/* Acha variavel (nao funcoes) (nao cria) Id pelo seu IDX */
+/* Acha (nao cria) Id pelo seu IDX */
 tabelaSimb *achaIdx(int i)
 {
-    char *p;
+//    char *p;
     tabelaSimb *ps;
-    int t1;
+//    int t1;
 
     if(i==-1)
         return NULL;
@@ -299,7 +303,7 @@ tabelaSimb *achaIdx(int i)
 /* Acha/cria ID e retorna o ponteiro para a tabelaSimb */
 tabelaSimb *achaId(char *nome)
 {
-    char *p;
+//    char *p;
     tabelaSimb *ps;
 
     for(ps=tabSimb; ps < &tabSimb[MAX_SIMB]; ps++)
@@ -310,6 +314,7 @@ tabelaSimb *achaId(char *nome)
         {
             ps->tipoD = tipoIdUndef;
             ps->idNome = strdup(nome);
+            ps->pes=NULL;
             return ps;
         }
     }
@@ -320,7 +325,7 @@ tabelaSimb *achaId(char *nome)
 /* Acha/cria ConInt e retorna o ponteiro para a TS */
 tabelaSimb *achaInt(int iv)
 {
-    char *p;
+//    char *p;
     tabelaSimb *ps;
     int i;
 
@@ -335,6 +340,7 @@ tabelaSimb *achaInt(int iv)
             ps->idNome = strdup("#ConInt");
             ps->ival = iv;
             ps->idx = i;
+            ps->pes=NULL;
             return ps;
         }
     }
@@ -345,7 +351,7 @@ tabelaSimb *achaInt(int iv)
 /* Acha/cria ConFloat e retorna o ponteiro para a TS */
 tabelaSimb *achaDouble(float dv)
 {
-    char *p;
+//    char *p;
     tabelaSimb *ps;
     int i;
 
@@ -360,6 +366,7 @@ tabelaSimb *achaDouble(float dv)
             ps->idNome = strdup("#ConDouble");
             ps->dval = dv;
             ps->idx = i;
+            ps->pes=NULL;
             return ps;
         }
     }
@@ -370,7 +377,7 @@ tabelaSimb *achaDouble(float dv)
 /* Acha/cria ConStr e retorna o ponteiro para a TS */
 tabelaSimb *achaStr(char *sv)
 {
-    char *p;
+//    char *p;
     tabelaSimb *ps;
     int i;
 
@@ -385,12 +392,15 @@ tabelaSimb *achaStr(char *sv)
             ps->idNome = strdup("#ConStr");
             strcpy(ps->sval,sv);
             ps->idx = i;
+            ps->pes=NULL;
             return ps;
         }
     }
     yyerror("Tabela de simbolos cheia!"); /* caso contrario */
     exit(1);
 }
+
+
 
 //tabelaSimb *achaFunc(char *id)
 // {
@@ -415,7 +425,7 @@ tabelaSimb *achaStr(char *sv)
 /* Apenas procura (nao cria) TODAS funcoes, a partir da ultima procurada, ou NULL para a primeira */
 tabelaSimb *achaFuncs(tabelaSimb *ultima)
 {
-    char *p;
+//    char *p;
     tabelaSimb *ps;
 
     if(ultima==NULL) //null? a partir do primeiro
@@ -435,6 +445,7 @@ tabelaSimb *achaFuncs(tabelaSimb *ultima)
 nodo *convtn(int tipo)
 {
     nodo *tn;
+    //char *sTipoBase[8]={"tipoUndef", "tipoInt", "tipoDouble", "tipoStr", "tipoVoid", "tipoPointInt", "tipoPointDouble", "tipoPointStr"};
 
     if((tn=malloc(sizeof(nodo)))==NULL) /* aloca nodo */
         yyerror("Faltou memoria (cod. 1: convtn)");
@@ -442,6 +453,7 @@ nodo *convtn(int tipo)
     tn->linha = lineno;
     tn->tipoN = tipoTipo;
     tn->tt = tok2tb(tipo);
+//    fprintf(stderr, "convtn tt %d=(s) \n", tn->tt);//, sTipoBase[tn->tt]);
     return tn;
 }
 
@@ -478,6 +490,7 @@ nodo *opr(int oper, int nops, ...)
     tn->opr.oper = oper;
     tn->opr.nops = nops;
     va_start(ap, nops);
+    /* aponta para todos os seus nodos filhos: */
     for(i=0; i<nops; i++)
         tn->opr.ptn[i] = va_arg(ap, nodo*);
     va_end(ap);
@@ -498,4 +511,32 @@ void liberaNodo(nodo *tn)
             liberaNodo(tn->opr.ptn[i]);
     }
     free(tn);
+}
+
+void carregaFuncoesPreTS(void)
+{
+    int paramTipo[MAX_PARAM];
+    tabelaSimb *ps;
+
+    ps=addIdEsc("imprima", &esco);
+    paramTipo[0]=tipoStr;
+    paramTipo[1]=tipoDouble;
+    ps=addFunc("imprima", (void *)printf, "printf", 2, tipoIdFuncVoid, paramTipo);
+    //ps->pes=&esco;
+
+    ps=addIdEsc("leia", &esco);
+    paramTipo[0]=tipoStr;
+    paramTipo[1]=tipoDouble;
+    ps=addFunc("leia", (void *)scanf, "scanf", 2, tipoIdFuncVoid, paramTipo);
+    //ps->pes=&esco;
+
+    ps=addIdEsc("saia", &esco);
+    paramTipo[0]=tipoInt;
+    ps=addFunc("saia", (void *)exit, "exit", 1, tipoIdFuncVoid, paramTipo);
+    //ps->pes=&esco;
+
+    ps=addIdEsc("raiz", &esco);
+    paramTipo[0]=tipoDouble;
+    ps=addFunc("raiz", (void *)sqrt, "sqrt", 1, tipoIdFuncDouble, paramTipo);
+    //ps->pes=&esco;
 }

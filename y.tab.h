@@ -45,44 +45,44 @@ extern int yydebug;
 # define YYTOKENTYPE
   enum yytokentype
   {
-    PRINCIPAL = 258,
-    SE = 259,
-    ENTAO = 260,
-    SENAO = 261,
-    INICIO = 262,
-    FIM = 263,
-    ENQUANTO = 264,
-    ABORTE = 265,
-    PARA = 266,
-    RETORNE = 267,
-    INT = 268,
-    REAL = 269,
-    TEXTO = 270,
-    NADA = 271,
-    FUNCAO = 272,
-    EXTERNA = 273,
-    FUNC = 274,
-    DEFINE = 275,
-    DEBUG = 276,
-    ARVORE = 277,
-    TABELA = 278,
-    INC = 279,
-    DEC = 280,
-    INCPOS = 281,
-    INCPRE = 282,
-    DECPOS = 283,
-    DECPRE = 284,
-    PONT = 285,
-    UPONT = 286,
-    UEND = 287,
-    PATTRIB = 288,
-    PONTI = 289,
-    PONTR = 290,
-    PONTS = 291,
-    IDENT = 292,
-    INTCON = 293,
-    REALCON = 294,
-    TEXTOCON = 295,
+    SE = 258,
+    ENTAO = 259,
+    SENAO = 260,
+    INICIO = 261,
+    FIM = 262,
+    ENQUANTO = 263,
+    ABORTE = 264,
+    PARA = 265,
+    RETORNE = 266,
+    INT = 267,
+    REAL = 268,
+    TEXTO = 269,
+    NADA = 270,
+    FUNCAO = 271,
+    EXTERNA = 272,
+    FUNC = 273,
+    DEFINE = 274,
+    DEBUG = 275,
+    ARVORE = 276,
+    TABELA = 277,
+    INC = 278,
+    DEC = 279,
+    INCPOS = 280,
+    INCPRE = 281,
+    DECPOS = 282,
+    DECPRE = 283,
+    PONT = 284,
+    UPONT = 285,
+    UEND = 286,
+    PATTRIB = 287,
+    PONTI = 288,
+    PONTR = 289,
+    PONTS = 290,
+    IDENT = 291,
+    INTCON = 292,
+    REALCON = 293,
+    TEXTOCON = 294,
+    PRINCIPAL = 295,
     OU = 296,
     E = 297,
     NAO = 298,
@@ -96,44 +96,44 @@ extern int yydebug;
   };
 #endif
 /* Tokens.  */
-#define PRINCIPAL 258
-#define SE 259
-#define ENTAO 260
-#define SENAO 261
-#define INICIO 262
-#define FIM 263
-#define ENQUANTO 264
-#define ABORTE 265
-#define PARA 266
-#define RETORNE 267
-#define INT 268
-#define REAL 269
-#define TEXTO 270
-#define NADA 271
-#define FUNCAO 272
-#define EXTERNA 273
-#define FUNC 274
-#define DEFINE 275
-#define DEBUG 276
-#define ARVORE 277
-#define TABELA 278
-#define INC 279
-#define DEC 280
-#define INCPOS 281
-#define INCPRE 282
-#define DECPOS 283
-#define DECPRE 284
-#define PONT 285
-#define UPONT 286
-#define UEND 287
-#define PATTRIB 288
-#define PONTI 289
-#define PONTR 290
-#define PONTS 291
-#define IDENT 292
-#define INTCON 293
-#define REALCON 294
-#define TEXTOCON 295
+#define SE 258
+#define ENTAO 259
+#define SENAO 260
+#define INICIO 261
+#define FIM 262
+#define ENQUANTO 263
+#define ABORTE 264
+#define PARA 265
+#define RETORNE 266
+#define INT 267
+#define REAL 268
+#define TEXTO 269
+#define NADA 270
+#define FUNCAO 271
+#define EXTERNA 272
+#define FUNC 273
+#define DEFINE 274
+#define DEBUG 275
+#define ARVORE 276
+#define TABELA 277
+#define INC 278
+#define DEC 279
+#define INCPOS 280
+#define INCPRE 281
+#define DECPOS 282
+#define DECPRE 283
+#define PONT 284
+#define UPONT 285
+#define UEND 286
+#define PATTRIB 287
+#define PONTI 288
+#define PONTR 289
+#define PONTS 290
+#define IDENT 291
+#define INTCON 292
+#define REALCON 293
+#define TEXTOCON 294
+#define PRINCIPAL 295
 #define OU 296
 #define E 297
 #define NAO 298
@@ -150,7 +150,7 @@ extern int yydebug;
 typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 32 "portugol.y" /* yacc.c:1909  */
+#line 33 "portugol.y" /* yacc.c:1909  */
 
         tabelaSimb *pSimb;      /* yylval.pSimb ponteiro para o IDENT na TS */
         nodo *pNodo;            /* tipo do comando e expr */

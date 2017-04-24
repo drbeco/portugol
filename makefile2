@@ -1,0 +1,10 @@
+
+portugol.bin : y.tab.c lex.yy.c portugol.c
+	gcc $^ -o $@ -lm -ly
+
+y.tab.c : portugol.y
+    bison -dy $<
+
+lex.yy.c : portugol.l
+	flex $<
+

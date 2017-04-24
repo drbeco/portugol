@@ -1,0 +1,12 @@
+// Compilador PORTUGOL v.3q
+// Autor: Ruben Carlo Benante (Dr. Beco)
+// Email: rcb@beco.cc
+// Data: 21/03/2011
+
+inteiro principal(nada)
+inicio;
+    inteiro i;
+    i=1;
+    imprima("Num: %d\n", i);
+    retorne 1;
+fim;

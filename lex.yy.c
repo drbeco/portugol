@@ -600,10 +600,12 @@ char *yytext;
   #include <stdlib.h>
   #include "portugol.h"
   #include "y.tab.h"
+  //#include "portugol.tab.h"
 
-  extern int scanf(const char *, ...); //bug2-----------
   FILE *fhead=NULL;
-#line 607 "lex.yy.c"
+  //extern int indente, escopo;
+
+#line 609 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -817,11 +819,11 @@ YY_DECL
 		}
 
 	{
-#line 33 "portugol.l"
+#line 35 "portugol.l"
 
 
  /* comandos reservados */
-#line 825 "lex.yy.c"
+#line 827 "lex.yy.c"
 
 	while ( 1 )		/* loops until end-of-file is reached */
 		{
@@ -880,171 +882,174 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 36 "portugol.l"
-{ return PRINCIPAL; } /* main */
+#line 38 "portugol.l"
+{
+                tabelaSimb *ps = achaId(yytext);
+                yylval.pSimb = ps;
+                return PRINCIPAL;
+            } /* main */
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 37 "portugol.l"
+#line 43 "portugol.l"
 { return INICIO; }    /* { */
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 38 "portugol.l"
+#line 44 "portugol.l"
 { return FIM; }       /* } */
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 39 "portugol.l"
+#line 45 "portugol.l"
 { return SE; }        /* if */
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 40 "portugol.l"
+#line 46 "portugol.l"
 { return ENTAO; }     /* then_separator */
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 41 "portugol.l"
+#line 47 "portugol.l"
 { return SENAO; }     /* else */
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 42 "portugol.l"
+#line 48 "portugol.l"
 { return ENQUANTO; }  /* while */
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 43 "portugol.l"
+#line 49 "portugol.l"
 { return ABORTE; }    /* exit(1) */
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 44 "portugol.l"
+#line 50 "portugol.l"
 { return PARA; }      /* for */
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 45 "portugol.l"
+#line 51 "portugol.l"
 { return INT; }       /* int */
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 46 "portugol.l"
+#line 52 "portugol.l"
 { return REAL; }      /* float */
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 47 "portugol.l"
+#line 53 "portugol.l"
 { return TEXTO; }     /* char* */
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 48 "portugol.l"
+#line 54 "portugol.l"
 { return NADA; }      /* void */
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 49 "portugol.l"
+#line 55 "portugol.l"
 { return PONT; }      /* pointer */
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 50 "portugol.l"
+#line 56 "portugol.l"
 { return EXTERNA; }   /* externa real sqrt ( real ) */
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 51 "portugol.l"
+#line 57 "portugol.l"
 { return DEFINE; }    /* define uma macro */
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 52 "portugol.l"
+#line 58 "portugol.l"
 { return RETORNE; }   /* return */
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 53 "portugol.l"
+#line 59 "portugol.l"
 { return DEBUG; }     /* pre-processor directive */
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 54 "portugol.l"
+#line 60 "portugol.l"
 { return ARVORE; }    /* turn on print-syntatic-tree option */
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 55 "portugol.l"
+#line 61 "portugol.l"
 { return TABELA; }    /* turn on print-symbol-table option */
 	YY_BREAK
-/*funcao   { return FUNCAO; }     define uma funcao: tipoRet funcId ( tipoArg1 argId1, tipoArg2 argId2 ) */
 /* Pontuacao */
 case 21:
 YY_RULE_SETUP
-#line 59 "portugol.l"
+#line 64 "portugol.l"
 { return INC; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 60 "portugol.l"
+#line 65 "portugol.l"
 { return DEC; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 61 "portugol.l"
+#line 66 "portugol.l"
 { return GE; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 62 "portugol.l"
+#line 67 "portugol.l"
 { return LE; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 63 "portugol.l"
+#line 68 "portugol.l"
 { return EQ; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 64 "portugol.l"
+#line 69 "portugol.l"
 { return NE; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 65 "portugol.l"
+#line 70 "portugol.l"
 { return GT; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 66 "portugol.l"
+#line 71 "portugol.l"
 { return LT; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 67 "portugol.l"
+#line 72 "portugol.l"
 { return E; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 68 "portugol.l"
+#line 73 "portugol.l"
 { return OU; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 69 "portugol.l"
+#line 74 "portugol.l"
 { return NAO; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 71 "portugol.l"
+#line 76 "portugol.l"
 { return yytext[0]; }
 	YY_BREAK
 /* Identificadores */
 /* [a-zA-Z][a-zA-Z0-9_]*      {    tabelaSimb *ps = achaId(yytext); */
 case 33:
 YY_RULE_SETUP
-#line 76 "portugol.l"
+#line 81 "portugol.l"
 {   /* identificador: letra pode ser seguida de letra|digito|sublinhado */
                                 tabelaSimb *ps = achaId(yytext);
                                 yylval.pSimb = ps;
@@ -1054,7 +1059,7 @@ YY_RULE_SETUP
 /* Constantes */
 case 34:
 YY_RULE_SETUP
-#line 83 "portugol.l"
+#line 88 "portugol.l"
 {  /* double */
                                     tabelaSimb *ps = achaDouble(atof(yytext));
                                     yylval.pSimb = ps;
@@ -1063,7 +1068,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 89 "portugol.l"
+#line 94 "portugol.l"
 {  /* inteiro */
                tabelaSimb *ps = achaInt(atoi(yytext));
                yylval.pSimb = ps;
@@ -1072,7 +1077,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 95 "portugol.l"
+#line 100 "portugol.l"
 {  /* formato */
                tabelaSimb *ps = achaStr(yytext);
                yylval.pSimb = ps;
@@ -1082,7 +1087,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 102 "portugol.l"
+#line 107 "portugol.l"
 {  /* string */
                tabelaSimb *ps = achaStr(yytext);
                yylval.pSimb = ps;
@@ -1094,31 +1099,31 @@ YY_RULE_SETUP
 case 38:
 /* rule 38 can match eol */
 YY_RULE_SETUP
-#line 110 "portugol.l"
+#line 115 "portugol.l"
 { lineno++; }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 111 "portugol.l"
+#line 116 "portugol.l"
 ; /* faz nada */
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 112 "portugol.l"
-; /* "//".*\n ; */
+#line 117 "portugol.l"
+; /* "//".*\n ; comentario de linha */
 	YY_BREAK
 /* Outras coisas */
 case 41:
 YY_RULE_SETUP
-#line 115 "portugol.l"
+#line 120 "portugol.l"
 { yyerror("caracter invalido"); }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 117 "portugol.l"
+#line 122 "portugol.l"
 ECHO;
 	YY_BREAK
-#line 1122 "lex.yy.c"
+#line 1127 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2113,7 +2118,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 116 "portugol.l"
+#line 121 "portugol.l"
 
 
 
@@ -2129,11 +2134,14 @@ void yyerror(char *s)
 
 int main(int ac, char **av)
 {
-    int i;
+    //int i;
 
+    cabecalhoMain[0]=cabecalhoMain[1]=cabecalhoMain[MAX_CABECA-1]='\0';
+    indente=0;
     yyin=stdin;
     yyout=stdout;
     fhead=stdout;
+    fprintf(stderr, "pass 1... (analise lexica e sintatica)\n");
     if(ac>2) //tem arquivo de saida
     {
         if((yyout = fopen(av[2],"w"))==NULL)
@@ -2159,39 +2167,6 @@ int main(int ac, char **av)
     else
         fprintf(yyout, "Compilador PORTUGOL versao 3r, por Ruben Carlo Benante (25/05/09, 10/03/11).\n");
 
-    //int a=max(2,3);
-
-/* comentato 10/03/11, estava ok esta:
-// void printf ( str a , int b );
-addFuncVoid("imprima", (void *)printf, "printf", 2, tipoIdFuncVoid);
-*/
-
-    //** addFuncVoid("leia", (void *)scanf, "scanf", 0, tipoIdFuncDouble);   // void scanf ( float &a ); real leia ( void );
-    //**addFuncInt("leia", scanf, "scanf", 0, tipoIdFuncDouble);      // int scanf ( float &a ); real leia ( void );
-
-/*  comentato 10/03/11:  estava com problemas
-// bug2-----------int scanf ( float &a ); real leia ( void );
-addFuncInt2("leia", scanf, "scanf", 0, tipoIdFuncDouble);
-*/
-
-    //    addFuncVoid("leiaI", (void *)scanf, "scanf", 0);   // void scanf ( float &a ); int leiaI ( void );
-    //    addFuncVoid("leiaR", (void *)scanf, "scanf", 0);   // void scanf ( float &a ); real leiaR ( void );
-    //    addFuncVoid("leiaT", (void *)scanf, "scanf", 0);   // void scanf ( float &a ); texto leiaT ( void );
-
-/*  comentato 10/03/11, estava ok esta:
-// void exit ( int a );
-addFuncVoid("saia", (void *)exit, "exit", 1, tipoIdFuncVoid);
-troquei por retornar inteiro
-*/
-
-//addFunc("saia", (void *)exit, "exit" /*similar em c*/, 1/*num param*/, tipoIdFuncInt /*tipo de retorno e na TS*/, tipoConInt /*tipo arg*/);
-
-/* comentato 10/03/11, estava ok esta:
-addFuncDouble("raiz", sqrt, "sqrt", 1, tipoIdFuncDouble);              // float sqrt ( float a );
-    addFuncDouble("exp", exp, "exp", 1, tipoIdFuncDouble);
-    addFuncDouble("elevado", pow, "pow", 2, tipoIdFuncDouble);
-    addConStr("?");
-*/
     if(yyparse()) //falhou
     {
         fprintf(stderr, "//    Falha! Programa em Portugol nao compilado.\n\n");
@@ -2202,11 +2177,6 @@ addFuncDouble("raiz", sqrt, "sqrt", 1, tipoIdFuncDouble);              // float 
 
     return 0;
 }
-
-// void addConStr(char *s)
-// {
-//     tabelaSimb *ps = achaStr(s);
-// }
 
 //addFunc("saia", (void *)exit, "exit" /*similar em c*/, 1/*num param*/, tipoIdFuncInt /*tipo de retorno e na TS*/, tipoConInt /*tipo arg*/);
 //adiciona, substitui, ou cria! Criado por achaId
@@ -2259,47 +2229,7 @@ tabelaSimb *addFunc(char *id, void *func, char *idF /*similar em c*/, int nump, 
     for(i=0; i<nump; i++)
         ps->tipoParam[i]=ta[i];
     ps->idx = geraTF();
+    //ps->pes=&esco; //feito por achaFuncEsc(), em pass2 / mudou para addIdEsc() tanto para funcoes como variaveis
     return ps;
 }
-
-// void addFuncDouble(char *id, double (*func)(), char *idF, int nump, int tp)
-// {
-//     tabelaSimb *ps = achaId(id); //acha ou cria na tabela de simbolos
-//     ps->dfunc =  func;
-//     ps->idFunc = strdup(idF);
-//     ps->numPar = nump;
-//     ps->tipoRetNovo = tp;
-//
-//     ps->tipoD = tipoIdFuncDouble;
-//     ps->idx = geraTF();
-// }
-
-
-//bug2--------------
-//addFuncInt("leia", (void *)scanf, "scanf", 0, tipoIdFuncDouble);      // int scanf ( float &a ); real leia ( void );
-/* comentato 10/03/11, estava com problemas:
-void addFuncInt2(char *id, int (*func)(const char *, ...), char *idF, int nump, int tp)
-{
-    tabelaSimb *ps = achaId(id);
-    ps->i2func =  func;
-    ps->idFunc = strdup(idF);
-    ps->numPar = nump;
-    ps->tipoRetNovo = tp;
-
-    ps->tipoD = tipoIdFuncInt;
-    ps->idx = geraTF();
-}
-*/
-
-// void addFuncVoid(char *id, void (*func)(), char *idF, int nump, int tp)
-// {
-//     tabelaSimb *ps = achaId(id); //idName
-//     ps->vfunc =  func;
-//     ps->idFunc = strdup(idF);
-//     ps->numPar = nump;
-//     ps->tipoRetNovo = tp;
-//
-//     ps->tipoD = tipoIdFuncVoid;
-//     ps->idx = geraTF();
-// }
 
