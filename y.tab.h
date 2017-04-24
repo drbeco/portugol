@@ -51,18 +51,34 @@ extern int yydebug;
     INICIO = 261,
     FIM = 262,
     IMPRIMA = 263,
-    ID = 264,
-    FLUTUANTE = 265,
-    OU = 266,
-    E = 267,
-    NAO = 268,
-    GE = 269,
-    LE = 270,
-    EQ = 271,
-    NE = 272,
-    GT = 273,
-    LT = 274,
-    UMENOS = 275
+    LEIA = 264,
+    ENQUANTO = 265,
+    ABORTE = 266,
+    SAIA = 267,
+    PARA = 268,
+    INT = 269,
+    REAL = 270,
+    TEXTO = 271,
+    DEFINE = 272,
+    IMPORTE = 273,
+    FUNC = 274,
+    DEBUG = 275,
+    ARVORE = 276,
+    TABELA = 277,
+    IDENT = 278,
+    INTCON = 279,
+    REALCON = 280,
+    TEXTOCON = 281,
+    OU = 282,
+    E = 283,
+    NAO = 284,
+    GE = 285,
+    LE = 286,
+    EQ = 287,
+    NE = 288,
+    GT = 289,
+    LT = 290,
+    UMENOS = 291
   };
 #endif
 /* Tokens.  */
@@ -72,31 +88,46 @@ extern int yydebug;
 #define INICIO 261
 #define FIM 262
 #define IMPRIMA 263
-#define ID 264
-#define FLUTUANTE 265
-#define OU 266
-#define E 267
-#define NAO 268
-#define GE 269
-#define LE 270
-#define EQ 271
-#define NE 272
-#define GT 273
-#define LT 274
-#define UMENOS 275
+#define LEIA 264
+#define ENQUANTO 265
+#define ABORTE 266
+#define SAIA 267
+#define PARA 268
+#define INT 269
+#define REAL 270
+#define TEXTO 271
+#define DEFINE 272
+#define IMPORTE 273
+#define FUNC 274
+#define DEBUG 275
+#define ARVORE 276
+#define TABELA 277
+#define IDENT 278
+#define INTCON 279
+#define REALCON 280
+#define TEXTOCON 281
+#define OU 282
+#define E 283
+#define NAO 284
+#define GE 285
+#define LE 286
+#define EQ 287
+#define NE 288
+#define GT 289
+#define LT 290
+#define UMENOS 291
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 25 "portugol.y" /* yacc.c:1909  */
+#line 28 "portugol.y" /* yacc.c:1909  */
 
-        float floatval; /* yylval.floatval tipo do FLUTUANTE */
-        tipoNodo *nPtr; /* tipo do comando e expr */
-        int varno;      /* yylval.varno tipo do ID */
+        tabelaSimb *pSimb;      /* yylval.pSimb ponteiro para o IDENT na TS */
+        nodo *pNodo;            /* tipo do comando e expr */
 
-#line 100 "y.tab.h" /* yacc.c:1909  */
+#line 131 "y.tab.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

@@ -1,9 +1,10 @@
 #!/bin/bash
-# Compila arq com lex e yacc
+# Compila arq com lex e yacc (portugol v2q)
 #/*
 #    Autor: Ruben Carlo Benante
 #    Email: benante@gmail.com
 #    Data: 23/04/2009
+#    Modificado em: 24/05/2009
 #*/
 #
 # Exemplo:

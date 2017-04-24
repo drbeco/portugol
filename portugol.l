@@ -1,9 +1,10 @@
 %{
 /*
-    Compilador PORTUGOL v.1q
+    Compilador PORTUGOL v.2q
     Autor: Ruben Carlo Benante
     Email: benante@gmail.com
-    Data: 23/04/2009
+    Data criação: 23/04/2009
+    Data modificação: 24/05/2009
 */
 
   #include <math.h>
@@ -11,19 +12,33 @@
   #include "portugol.h"
   #include "y.tab.h"
 
-  void yyerror(char *s);
-  int lineno = 1;
+  FILE *fhead=NULL;
 %}
 
 %%
 
- /* Palavras reservadas */
-se      { return SE; }
-entao   { return ENTAO; }
-senao   { return SENAO; }
-inicio  { return INICIO; }
-fim     { return FIM; }
-imprima { return IMPRIMA; }
+ /* comandos reservados */
+inicio   { return INICIO; }    /* { */
+fim      { return FIM; }       /* } */
+se       { return SE; }        /* if */
+entao    { return ENTAO; }     /* then_separator */
+senao    { return SENAO; }     /* else */
+enquanto { return ENQUANTO; }  /* while */
+aborte   { return ABORTE; }    /* exit(1) */
+para     { return PARA; }      /* for */
+int      { return INT; }       /* int */
+real     { return REAL; }      /* float */
+texto    { return TEXTO; }     /*  char* */
+importe  { return IMPORTE; }   /* import double sqrt ( double ) */
+define   { return DEFINE; }    /* define int funcId ( int argId ) */
+"#debug" { return DEBUG; }     /* pre-processor directive */
+_ARVORE  { return ARVORE; }    /* turn on print-syntatic-tree option */
+_TABELA   { return TABELA; }   /* turn on print-symbol-table option */
+
+ /* funcoes reservadas */
+imprima  { return IMPRIMA; }   /* printf(format,x); format=={"%d", "%.2f", "%s"} */
+leia     { return LEIA; }      /* scanf("%f",&x); */
+saia     { return SAIA; }      /* exit(x) */
 
  /* Pontuacao */
 ">="    { return GE; }
@@ -36,21 +51,34 @@ imprima { return IMPRIMA; }
 "ou"    { return OU; }
 "nao"   { return NAO; }
 
-[-+*/=();]    { return yytext[0]; }
+[-+*/=();%]    { return yytext[0]; }
 
- /* Identificador */
-[A-Z]   {   yylval.varno = yytext[0] - 'A';
-            return ID;
-        }
+ /* Identificadores */
+[a-zA-Z][a-zA-Z0-9_]*      {    tabelaSimb *ps = achaId(yytext);
+                                yylval.pSimb = ps;
+                                return IDENT;
+                            }
 
- /* Numero */
-[0-9]+("."[0-9]+)? { yylval.floatval = atof(yytext);
-                    return FLUTUANTE; }
+ /* Constantes */
+[0-9]+"."[0-9]+([eE][+-]?[0-9]+)?   {  tabelaSimb *ps = achaFloat(atof(yytext));
+                                       yylval.pSimb = ps;
+                                       return REALCON;
+                                    }
+
+[0-9]+                { tabelaSimb *ps = achaInt(atoi(yytext));
+                        yylval.pSimb = ps;
+                        return INTCON;
+                      }
+
+"\""[^"\n]*"\""     {  tabelaSimb *ps = achaStr(yytext);
+                       yylval.pSimb = ps;
+                       return TEXTOCON;
+                    }
 
  /* espacos e comentarios */
 \n              { lineno++; }
-[ \t\r]+        ; /* faz nada */
-"//".*          ; /* "//".*\n ; */
+[ \t\r]+        ; /* do nothing */
+"//".*          ; /* one-line comments */
 
  /* Outras coisas */
 .           { yyerror("caracter invalido"); }
@@ -64,7 +92,7 @@ int yywrap(void)
 
 void yyerror(char *s)
 {
-    fprintf(stderr, "//    Linha:%d Erro: %s Token: %s\n", lineno, s, yytext);
+    fprintf(stderr, "//    Linha:%d. Erro: %s Token: '%s'.\n", lineno, s, yytext);
 }
 
 int main(int ac, char **av)
@@ -73,30 +101,38 @@ int main(int ac, char **av)
 
     yyin=stdin;
     yyout=stdout;
+    fhead=stdout;
     if(ac>2) //tem arquivo de saida
+    {
         if((yyout = fopen(av[2],"w"))==NULL)
         {
-            fprintf(stderr, "Nao consigo abrir arquivo de saida.\n");
+            fprintf(stderr, "Nao consigo abrir arquivo %s para gravacao.\n", av[2]);
             exit(1);
         }
+        if((fhead = fopen("saida.h","w"))==NULL)
+        {
+            fprintf(stderr, "Nao consigo abrir arquivo saida.h para gravacao.\n");
+            exit(1);
+        }
+    }
 
     if(ac>1)
     {
         if((yyin = fopen(av[1],"r"))==NULL)
         {
-            fprintf(stderr, "Nao consigo abrir arquivo de entrada.\n");
+            fprintf(stderr, "Nao consigo abrir arquivo %s para leitura.\n", av[1]);
             exit(1);
         }
-        fprintf(yyout, "//    Gerado pelo compilador PORTUGOL versao 1q\n");
-        fprintf(yyout, "//    Autor: Ruben Carlo Benante\n");
-        fprintf(yyout, "//    Email: benante@gmail.com\n");
-        fprintf(yyout, "//    Data: 23/04/2009\n\n");
-        fprintf(yyout, "#include \"quadruplas.h\"\n\n");
-        fprintf(yyout, "int main(void)\n");
     }
     else
-        fprintf(yyout, "Compilador PORTUGOL versao 1q, by Ruben Carlo Benante.\n");
+        fprintf(yyout, "Compilador PORTUGOL versao 2q, por Ruben Carlo Benante (24/05/09).\n");
 
+    addFuncVoid("imprima", (void *)printf, "printf");
+    addFuncVoid("leia", (void *)scanf, "scanf");
+    addFuncVoid("saia", (void *)exit, "exit");
+    addFuncDouble("raiz", sqrt, "sqrt");
+    addFuncDouble("exp", exp, "exp");
+    addConStr("?");
     if(yyparse()) //falhou
     {
         fprintf(stderr, "//    Falha! Programa em Portugol nao compilado.\n\n");
@@ -105,6 +141,28 @@ int main(int ac, char **av)
     return 1;
     }
 
-    //fprintf(stderr, "\n//    Sucesso! Programa em Portugol compilado.\n\n");
     return 0;
+}
+
+void addConStr(char *s)
+{
+    tabelaSimb *ps = achaStr(s);
+}
+
+void addFuncDouble(char *id, double (*func)(), char *idF)
+{
+    tabelaSimb *ps = achaId(id); //ps->idNome = strdup(nome);
+    ps->dfunc =  func;
+    ps->tipoD = tipoIdFuncDouble;
+    ps->idx = geraTF();
+    ps->idFunc = strdup(idF);
+}
+
+void addFuncVoid(char *id, void (*func)(), char *idF)
+{
+    tabelaSimb *ps = achaId(id); //idName
+    ps->vfunc =  func;
+    ps->tipoD = tipoIdFuncVoid;
+    ps->idx = geraTF();
+    ps->idFunc = strdup(idF);
 }

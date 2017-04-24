@@ -122,6 +122,14 @@ inicio;
 fim;
 ```
 
+### Syntax highlighting
+
+Se você usa o editor _Kate_ (do _KDE_) ou compatíveis com o _XML_ de _syntax highlighting_, basta usar o seguinte comando para ver o código colorido:
+
+```
+$ cp ptg.xml /home/user/.kde/share/apps/katepart/syntax/
+```
+
 ### Autor e Copyright
 
 * Autor: Prof. Dr. Ruben Carlo Benante

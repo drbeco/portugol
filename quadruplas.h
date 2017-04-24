@@ -1,183 +1,679 @@
-//    Compilador PORTUGOL versao 1q
+//    Compilador PORTUGOL versao 2q
 //    Autor: Ruben Carlo Benante
 //    Email: benante@gmail.com
 //    Data: 23/04/2009
+//    Modificado: 24/05/2009
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <math.h>
 
-#define STACK_SIZE 100
+#define STACK_SIZE 200
 #define FUNC_NAME_SIZE 32
-#define TEMP_SIZE 100
 #define MAX_PARAM 4
+#define MAX_SVAL 256
 
-struct tabela_call_s //tabela de nomes e enderecos de funcoes para chamar com call
+/* Tipos de Base */
+typedef enum
 {
-    char nome[FUNC_NAME_SIZE]; //nome da funcao
-    void (*endereco)();        //ponteiro para a funcao
-} tabcall[] = {
-                {"imprima", (void *)printf}  //imprima chama printf
-              };
+    tipoIndef,
+    tipoInt,
+    tipoFloat,
+    tipoStr
+} tipoBase;
 
-enum {imprima}; //enumeracao de funcoes disponiveis
+typedef enum
+{
+    tipoRetFuncInt,
+    tipoRetFuncFloat,
+    tipoRetFuncDouble,
+    tipoRetFuncChar,
+    tipoRetFuncStr,
+    tipoRetFuncVoid,
+    tipoRetFuncPVoid
+} tipoRetFunc;
 
-float stack[STACK_SIZE]; //pilha
-int stack_idx=0;         //indice da pilha
-float temp[TEMP_SIZE];   //variaveis temporarias
-float ts[26] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; //tabela de simbolos simplificada
+/* Super Tipo */
+typedef struct
+{
+      tipoBase tipo;
+      int    ival;
+      float  fval;
+      char   sval[MAX_SVAL];
+} superTipo;
 
-#define jump_f(Q1,NULO,LABEL) if(!Q1) goto LABEL    /* jump to LABEL if Q1==false */
-#define jump(NULO1,NULO2,LABEL) goto LABEL          /* jump to LABEL */
-void nop(float *nulo1, float *nulo2, float *nulo3); // do nothing
-void mov(float q1, float *nulo, float *qres);       // *qres = q1
-void uminus(float q1, float *nulo, float *qres);    // *qres = -q1
-void add(float q1, float q2, float *qres);          // *qres = q1 + q2
-void sub(float q1, float q2, float *qres);          // *qres = q1 - q2
-void mult(float q1, float q2, float *qres);         // *qres = q1 * q2
-void divi(float q1, float q2, float *qres);         // *qres = q1 / q2
-void comp_eq(float q1, float q2, float *qres);      // *qres = (q1 == q2)
-void comp_ne(float q1, float q2, float *qres);      // *qres = (q1 != q2)
-void comp_gt(float q1, float q2, float *qres);      // *qres = (q1 > q2)
-void comp_lt(float q1, float q2, float *qres);      // *qres = (q1 < q2)
-void comp_ge(float q1, float q2, float *qres);      // *qres = (q1 >= q2)
-void comp_le(float q1, float q2, float *qres);      // *qres = (q1 <= q2)
-void rela_an(float q1, float q2, float *qres);      // *qres = (q1 && q2)
-void rela_or(float q1, float q2, float *qres);      // *qres = (q1 || q2)
-void rela_no(float q1, float *nulo, float *qres);   // *qres = (!q1)
-void param(float q1, float *nulo1, float *nulo2);   // push q1 to stak as function parameter
-void call(char *q1, int q2, float *qres);           // *qres = f_name(a[1], ..., a[q2]); where q1:f_name, q2:quantity of param
+/* Super Func */
+typedef struct
+{
+      tipoRetFunc tipoRet;
+      tipoBase tipoParam[MAX_PARAM];
+      int numParam;
+      char   *idNome;
+      int    (*ifunc)();   //ponteiro para funcao que retorna inteiro
+      float  (*ffunc)();   //ponteiro para funcao que retorna float
+      double (*dfunc)();   //ponteiro para funcao que retorna double
+      char   (*cfunc)();   //ponteiro para funcao que retorna char
+      char   *(*sfunc)();  //ponteiro para funcao que retorna ponteiro para char
+      void   (*vfunc)();   //ponteiro para a funcao que retorna void
+      void   *(*pfunc)();  //ponteiro para a funcao que retorna ponteiro para void
+} superFunc;
 
-/* ---------------------------------------------------------------------------------------------------------------------- */
+#include "saida.h"
+
+superTipo gstack[STACK_SIZE];   //pilha
+int gsi=0;                      //indice da pilha geral
+
+#define jump_f(Q1,NUL1,LABEL) if(!(Q1.ival)) goto LABEL    /* jump to LABEL if Q1.ival==false */
+#define jump(NUL1,NUL2,LABEL) goto LABEL            /* jump to LABEL */
+void nop(superTipo  *nul1, superTipo  *nul2, superTipo  *nul3);    // do nothing
+void halt(superTipo  *nul1, superTipo  *nul2, superTipo  *nul3);   // abort with exit(1)
+
+void loadi(int i,   int *nul1,   superTipo *tn);// { tn->tipo=tipoIntInt; tn->ival=i; }
+void loadf(float f, float *nul1, superTipo *tn);// { tn->tipo=tipoIntFloat; tn->fval=f; }
+void loads(char *s, char *nul1,  superTipo *tn);// { tn->tipo=tipoIntStr; strcpy(tn->sval,s); }
+
+void mov(superTipo q1, superTipo *nul1, superTipo *qres);               //qres=q1;
+
+void uminus(superTipo  q1, superTipo  *nul1, superTipo  *qres);    // *qres = -q1
+void add(superTipo  q1, superTipo  q2, superTipo  *qres);          // *qres = q1 + q2
+void sub(superTipo  q1, superTipo  q2, superTipo  *qres);          // *qres = q1 - q2
+void mult(superTipo  q1, superTipo  q2, superTipo  *qres);         // *qres = q1 * q2
+void divi(superTipo  q1, superTipo  q2, superTipo  *qres);         // *qres = q1 / q2
+void mod(superTipo  q1, superTipo  q2, superTipo  *qres);          // *qres = q1 % q2
+void comp_eq(superTipo  q1, superTipo  q2, superTipo  *qres);      // *qres = (q1 == q2)
+void comp_ne(superTipo  q1, superTipo  q2, superTipo  *qres);      // *qres = (q1 != q2)
+void comp_gt(superTipo  q1, superTipo  q2, superTipo  *qres);      // *qres = (q1 > q2)
+void comp_lt(superTipo  q1, superTipo  q2, superTipo  *qres);      // *qres = (q1 < q2)
+void comp_ge(superTipo  q1, superTipo  q2, superTipo  *qres);      // *qres = (q1 >= q2)
+void comp_le(superTipo  q1, superTipo  q2, superTipo  *qres);      // *qres = (q1 <= q2)
+void rela_an(superTipo  q1, superTipo  q2, superTipo  *qres);      // *qres = (q1 && q2)
+void rela_or(superTipo  q1, superTipo  q2, superTipo  *qres);      // *qres = (q1 || q2)
+void rela_no(superTipo  q1, superTipo  *nul1, superTipo  *qres);   // *qres = (!q1)
+void param(superTipo q1, void *nul1, void *nul2); // push(q1)
+void call(char *q1, int q2, superTipo  *qres);    // *qres = f_name(a[1], ..., a[q2]); where q1:f_name, q2:quantity of param
+
+void push(superTipo g); // poe na pilha de execucao
+superTipo *pop(void);   // tira da pilha de execucao
+
+/* ------------------------------------------------------------------------------------------------- */
 
 /* auxiliar functions */
-
-void _push(float f); // poe na pilha de execucao
-float _pop(void);    // tira da pilha de execucao
-
-/* function bodies */
-
-void _push(float f)
+//---------------------------
+void push(superTipo g) // poe na pilha de execucao geral //push to stack
 {
-    stack[stack_idx]=f;
-    stack_idx++;
-    if(stack_idx>=STACK_SIZE)
+    gstack[gsi]=g; //copia por valor
+    gsi++;
+    if(gsi>=STACK_SIZE)
     {
-        fprintf(stderr,"Erro: pilha cheia.");
+        fprintf(stderr,"ASM Error: stack overflow.\n");
         exit(1);
     }
 }
 
-float _pop(void)
+superTipo *pop(void)    // tira da pilha de execucao geral //pop from stack
 {
-    if(stack_idx<=0)
+    superTipo *r;
+    if(gsi<=0)
     {
-        fprintf(stderr,"Erro: pilha vazia.");
+        fprintf(stderr,"ASM Error: stack underflow.\n");
         exit(1);
     }
-    return(stack[--stack_idx]);
+    r=malloc(sizeof(superTipo));
+    *r=gstack[--gsi]; //copia por valor
+    return(r); //&gstack[--gsi]
 }
 
 /* jump operations */
-//   jump(NULL,NULL,l2);
-//   jump_f(temp[0],NULL,l1);
 //---------------------------
-
-//jump_f(tem[13],NULL,l1); // jump if false, i.e., if q1==false jump to label l1
-//inline void jump_f(float q1, float *nulo, char *qres) { if(!q1) goto *qres; }
-#define jump_f(Q1,NULO,LABEL) if(!Q1) goto LABEL    /* jump to LABEL if Q1==false */
-//jump(NULL,NULL,l1); // unconditional jump to label l1
-#define jump(NULO1,NULO2,LABEL) goto LABEL          /* jump to LABEL */
+//see above
 
 /* misc operations */
-//nop(NULL,NULL,NULL); // do nothing (just like python keyword pass)
 //---------------------------
+void nop(superTipo  *nul1, superTipo  *nul2, superTipo  *nul3) //nop : //do nothing
+{
+    ;
+}
 
-//nop : //do nothing
-void nop(float *nulo1, float *nulo2, float *nulo3) { ; }
+void halt(superTipo  *nul1, superTipo  *nul2, superTipo  *nul3) // abort with exit(1)
+{
+    exit(1);
+}
 
 /* memory operations */
-//  mov(1.00,NULL,&ts[0]);
-//  mov(temp[8],NULL,&ts[3]);
 //---------------------------
+void loadi(int i,   int *nul1,   superTipo *qres)
+{
+    qres->tipo=tipoInt;
+    qres->ival=i;
+    qres->fval=0.0;
+    qres->sval[0]='\0';
+}
 
-//  mov(temp[8],NULL,&ts[3]); //ts[3]=temp[8];
-void mov(float q1, float *nulo, float *qres) { *qres=q1; }
+void loadf(float f, float *nul1, superTipo *qres)
+{
+    qres->tipo=tipoFloat;
+    qres->ival=0;
+    qres->fval=f;
+    qres->sval[0]='\0';
+}
+
+void loads(char *s, char *nul1,  superTipo *qres)
+{
+    qres->tipo=tipoStr;
+    qres->ival=0;
+    qres->fval=0.0;
+    strcpy(qres->sval, s);
+}
+
+void mov(superTipo q1, superTipo *nul1, superTipo *qres)
+{
+    qres->tipo=q1.tipo;
+    if(q1.tipo==tipoInt)
+        qres->ival=q1.ival;
+    else if(q1.tipo==tipoFloat)
+        qres->fval=q1.fval;
+    else if(q1.tipo==tipoStr)
+        strcpy(qres->sval, q1.sval);
+    else
+    {
+        fprintf(stderr,"ASM Error: invalid mov operation.\n");
+        exit(1);
+    }
+}
 
 /*mathematical operations */
-//   uminus(3.00,NULL,&temp[1]);
-//   add(temp[2],4.00,&temp[3]);
-//   sub(temp[5],temp[6],&temp[7]);
-//   mult(1.00,temp[3],&temp[4]);
-//   divi(2.00,temp[1],&temp[2]);
 //---------------------------
 
-//  uminus  (3.00,NULL,&temp[1]); //temp[1]=-3.0;
-void uminus(float q1, float *nulo, float *qres) { *qres=-q1; }
-//   add(temp[2],4.00,&temp[3]); //temp[3]=temp[2]+4.0;
-void add(float q1, float q2, float *qres) { *qres=q1+q2; }
-//   sub(temp[5],temp[6],&temp[7]); //temp[7]=temp[5]-temp[6];
-void sub(float q1, float q2, float *qres) { *qres=q1-q2; }
-//   mult(1.00,temp[3],&temp[4]); //temp[4]=1.0*temp[3];
-void mult(float q1, float q2, float *qres) { *qres=q1*q2; }
-//   divi(2.00,temp[1],&temp[2]); //temp[2]=2.0/temp[1];
-void divi(float q1, float q2, float *qres) { *qres=q1/q2; }
+void uminus(superTipo  q1, superTipo  *nul1, superTipo  *qres)
+{
+    if(q1.tipo==tipoStr)
+    {
+        fprintf(stderr,"ASM Error: invalid uminus operation.\n");
+        exit(1);
+    }
+    qres->tipo=q1.tipo;
+    if(q1.tipo==tipoInt)
+        qres->ival=-q1.ival;
+    else
+        qres->fval=-q1.fval;
+}
+
+void add(superTipo  q1, superTipo  q2, superTipo  *qres)
+{
+
+    float arg1, arg2;
+
+    if((q1.tipo == tipoStr || q2.tipo == tipoStr) && (q1.tipo != tipoStr || q2.tipo != tipoStr))
+    {
+        fprintf(stderr,"ASM Error: invalid add operation.\n");
+        exit(1);
+    }
+
+    if(q1.tipo == tipoStr) //se um eh, ambos sao
+    {
+        qres->tipo=tipoStr;
+        strcpy(qres->sval, q1.sval);
+        strcat(qres->sval, q2.sval);
+        return;
+    }
+
+    if(q1.tipo == tipoFloat)
+        arg1=q1.fval;
+    else
+        arg1=(float)q1.ival;
+    if(q2.tipo == tipoFloat)
+        arg2=q2.fval;
+    else
+        arg2=(float)q2.ival;
+
+    if(q1.tipo == tipoFloat || q2.tipo == tipoFloat)
+    {
+        qres->fval=arg1 + arg2;
+        qres->tipo=tipoFloat;
+    }
+    else
+    {
+        qres->ival=(int)(arg1 + arg2);
+        qres->tipo=tipoInt;
+    }
+}
+
+void sub(superTipo  q1, superTipo  q2, superTipo  *qres)
+{
+
+    float arg1, arg2;
+
+    if(q1.tipo == tipoStr || q2.tipo == tipoStr)
+    {
+        fprintf(stderr,"ASM Error: invalid sub operation.\n");
+        exit(1);
+    }
+
+    if(q1.tipo == tipoFloat)
+        arg1=q1.fval;
+    else
+        arg1=(float)q1.ival;
+    if(q2.tipo == tipoFloat)
+        arg2=q2.fval;
+    else
+        arg2=(float)q2.ival;
+
+    if(q1.tipo == tipoFloat || q2.tipo == tipoFloat)
+    {
+        qres->fval=arg1 - arg2;
+        qres->tipo=tipoFloat;
+    }
+    else
+    {
+        qres->ival=(int)(arg1 - arg2);
+        qres->tipo=tipoInt;
+    }
+}
+
+void mult(superTipo  q1, superTipo  q2, superTipo  *qres)
+{
+
+    float arg1, arg2;
+
+    if(q1.tipo == tipoStr || q2.tipo == tipoStr)
+    {
+        fprintf(stderr,"ASM Error: invalid mult operation.\n");
+        exit(1);
+    }
+
+    if(q1.tipo == tipoFloat)
+        arg1=q1.fval;
+    else
+        arg1=(float)q1.ival;
+    if(q2.tipo == tipoFloat)
+        arg2=q2.fval;
+    else
+        arg2=(float)q2.ival;
+
+    if(q1.tipo == tipoFloat || q2.tipo == tipoFloat)
+    {
+        qres->fval=arg1 * arg2;
+        qres->tipo=tipoFloat;
+    }
+    else
+    {
+        qres->ival=(int)(arg1 * arg2);
+        qres->tipo=tipoInt;
+    }
+}
+
+void divi(superTipo  q1, superTipo  q2, superTipo  *qres)
+{
+
+    float arg1, arg2;
+
+    if(q1.tipo == tipoStr || q2.tipo == tipoStr)
+    {
+        fprintf(stderr,"ASM Error: invalid divi operation.\n");
+        exit(1);
+    }
+
+    if(q2.tipo == tipoFloat)
+        arg2=q2.fval;
+    else
+        arg2=(float)q2.ival;
+    if(arg2==0.0)
+    {
+        fprintf(stderr,"ASM Error: division by zero.\n");
+        exit(1);
+    }
+    if(q1.tipo == tipoFloat)
+        arg1=q1.fval;
+    else
+        arg1=(float)q1.ival;
+
+    if(q1.tipo == tipoFloat || q2.tipo == tipoFloat)
+    {
+        qres->fval=arg1 / arg2;
+        qres->tipo=tipoFloat;
+    }
+    else
+    {
+        qres->ival=(int)(arg1 / arg2);
+        qres->tipo=tipoInt;
+    }
+}
+
+void mod(superTipo  q1, superTipo  q2, superTipo  *qres) // *qres = q1 % q2
+{
+
+    int arg1, arg2;
+
+    if(q1.tipo == tipoStr || q2.tipo == tipoStr)
+    {
+        fprintf(stderr,"ASM Error: invalid mod operation.\n");
+        exit(1);
+    }
+
+    if(q2.tipo == tipoFloat)
+        arg2=(int)q2.fval;
+    else
+        arg2=q2.ival;
+    if(arg2==0)
+    {
+        fprintf(stderr,"ASM Error: mod division by zero.\n");
+        exit(1);
+    }
+    if(q1.tipo == tipoFloat)
+        arg1=(int)q1.fval;
+    else
+        arg1=q1.ival;
+
+    qres->tipo=tipoInt;
+    qres->ival=arg1 % arg2;
+}
 
 /* logical operations */
-//   comp_eq(ts[1],2.00,&temp[0]);
-//   comp_ne(ts[1],2.00,&temp[10]);
-//   comp_gt(ts[0],2.00,&temp[15]);
-//   comp_lt(ts[1],3.00,&temp[16]);
-//   comp_ge(ts[2],3.00,&temp[11]);
-//   comp_le(ts[3],0.00,&temp[14]);
 //---------------------------
 
-//   comp_eq(ts[1],2.00,&temp[0]); //temp[0]=(ts[1]==2.0);
-void comp_eq(float q1, float q2, float *qres) { *qres=(q1==q2); }
-//   comp_ne(ts[1],2.00,&temp[10]); //temp[10]=(ts[1]!=2.0);
-void comp_ne(float q1, float q2, float *qres) { *qres=(q1!=q2); }
-//   comp_gt(ts[0],2.00,&temp[15]); //temp[15]=(ts[0]>2.0);
-void comp_gt(float q1, float q2, float *qres) { *qres=(q1>q2); }
-//   comp_lt(ts[1],3.00,&temp[16]); //temp[16]=(ts[1]<3.0);
-void comp_lt(float q1, float q2, float *qres) { *qres=(q1<q2); }
-//   comp_ge(ts[2],3.00,&temp[11]); //temp[11]=(ts[2]>=3.0);
-void comp_ge(float q1, float q2, float *qres) { *qres=(q1>=q2); }
-//   comp_le(ts[3],0.00,&temp[14]); //temp[14]=(ts[3]<=0.0);
-void comp_le(float q1, float q2, float *qres) { *qres=(q1<=q2); }
+void comp_eq(superTipo  q1, superTipo  q2, superTipo  *qres)
+{
+
+    float arg1, arg2;
+
+    if((q1.tipo == tipoStr || q2.tipo == tipoStr) && (q1.tipo != tipoStr || q2.tipo != tipoStr))
+    {
+        fprintf(stderr,"ASM Error: invalid comp_eq operation.\n");
+        exit(1);
+    }
+
+    qres->tipo=tipoInt;
+    if(q1.tipo == tipoStr)
+    {
+        qres->ival = !(strcmp(q1.sval, q2.sval));
+        return;
+    }
+
+    if(q1.tipo == tipoFloat)
+        arg1=q1.fval;
+    else
+        arg1=(float)q1.ival;
+    if(q2.tipo == tipoFloat)
+        arg2=q2.fval;
+    else
+        arg2=(float)q2.ival;
+
+    qres->ival=(int)(arg1 == arg2);
+}
+
+void comp_ne(superTipo  q1, superTipo  q2, superTipo  *qres)
+{
+
+    float arg1, arg2;
+
+    if((q1.tipo == tipoStr || q2.tipo == tipoStr) && (q1.tipo != tipoStr || q2.tipo != tipoStr))
+    {
+        fprintf(stderr,"ASM Error: invalid comp_ne operation.\n");
+        exit(1);
+    }
+
+    qres->tipo=tipoInt;
+    if(q1.tipo == tipoStr)
+    {
+        qres->ival = !!(strcmp(q1.sval, q2.sval));
+        return;
+    }
+
+    if(q1.tipo == tipoFloat)
+        arg1=q1.fval;
+    else
+        arg1=(float)q1.ival;
+    if(q2.tipo == tipoFloat)
+        arg2=q2.fval;
+    else
+        arg2=(float)q2.ival;
+
+    qres->ival=(int)(arg1 != arg2);
+}
+
+void comp_gt(superTipo  q1, superTipo  q2, superTipo  *qres)
+{
+
+    float arg1, arg2;
+
+    if((q1.tipo == tipoStr || q2.tipo == tipoStr) && (q1.tipo != tipoStr || q2.tipo != tipoStr))
+    {
+        fprintf(stderr,"ASM Error: invalid comp_gt operation.\n");
+        exit(1);
+    }
+
+    qres->tipo=tipoInt;
+    if(q1.tipo == tipoStr)
+    {
+        qres->ival = (strcmp(q1.sval, q2.sval)>0);
+        return;
+    }
+
+    if(q1.tipo == tipoFloat)
+        arg1=q1.fval;
+    else
+        arg1=(float)q1.ival;
+    if(q2.tipo == tipoFloat)
+        arg2=q2.fval;
+    else
+        arg2=(float)q2.ival;
+
+    qres->ival=(int)(arg1 > arg2);
+}
+
+
+void comp_lt(superTipo  q1, superTipo  q2, superTipo  *qres)
+{
+    float arg1, arg2;
+
+    if((q1.tipo == tipoStr || q2.tipo == tipoStr) && (q1.tipo != tipoStr || q2.tipo != tipoStr))
+    {
+        fprintf(stderr,"ASM Error: invalid comp_lt operation.\n");
+        exit(1);
+    }
+
+    qres->tipo=tipoInt;
+    if(q1.tipo == tipoStr)
+    {
+        qres->ival = (strcmp(q1.sval, q2.sval)<0);
+        return;
+    }
+
+    if(q1.tipo == tipoFloat)
+        arg1=q1.fval;
+    else
+        arg1=(float)q1.ival;
+    if(q2.tipo == tipoFloat)
+        arg2=q2.fval;
+    else
+        arg2=(float)q2.ival;
+
+    qres->ival=(int)(arg1 < arg2);
+}
+
+void comp_ge(superTipo  q1, superTipo  q2, superTipo  *qres)
+{
+    float arg1, arg2;
+
+    if((q1.tipo == tipoStr || q2.tipo == tipoStr) && (q1.tipo != tipoStr || q2.tipo != tipoStr))
+    {
+        fprintf(stderr,"ASM Error: invalid comp_ge operation.\n");
+        exit(1);
+    }
+
+    qres->tipo=tipoInt;
+    if(q1.tipo == tipoStr)
+    {
+        qres->ival = (strcmp(q1.sval, q2.sval)>=0);
+        return;
+    }
+
+    if(q1.tipo == tipoFloat)
+        arg1=q1.fval;
+    else
+        arg1=(float)q1.ival;
+    if(q2.tipo == tipoFloat)
+        arg2=q2.fval;
+    else
+        arg2=(float)q2.ival;
+
+    qres->ival=(int)(arg1 >= arg2);
+}
+
+void comp_le(superTipo  q1, superTipo  q2, superTipo  *qres)
+{
+    float arg1, arg2;
+
+    if((q1.tipo == tipoStr || q2.tipo == tipoStr) && (q1.tipo != tipoStr || q2.tipo != tipoStr))
+    {
+        fprintf(stderr,"ASM Error: invalid comp_le operation.\n");
+        exit(1);
+    }
+
+    qres->tipo=tipoInt;
+    if(q1.tipo == tipoStr)
+    {
+        qres->ival = (strcmp(q1.sval, q2.sval)<=0);
+        return;
+    }
+
+    if(q1.tipo == tipoFloat)
+        arg1=q1.fval;
+    else
+        arg1=(float)q1.ival;
+    if(q2.tipo == tipoFloat)
+        arg2=q2.fval;
+    else
+        arg2=(float)q2.ival;
+
+    qres->ival=(int)(arg1 <= arg2);
+}
 
 /* relational operations */
-//   rela_an(temp[10],temp[11],&temp[12]);
-//   rela_or(temp[9],temp[12],&temp[13]);
-//   rela_no(temp[17],NULL,&temp[18]);
 //---------------------------
 
-//   rela_an(temp[10],temp[11],&temp[12]); //temp[12]=(temp[10]&&temp[11]);
-void rela_an(float q1, float q2, float *qres) { *qres=(q1&&q2); }
-//   rela_or(temp[9],temp[12],&temp[13]); //temp[13]=(temp[9]||temp[12]);
-void rela_or(float q1, float q2, float *qres) { *qres=(q1||q2); }
-//   rela_no(temp[17],NULL,&temp[18]); //temp[18]=!(temp[17]);
-void rela_no(float q1, float *nulo, float *qres) { *qres=(!q1); }
+void rela_an(superTipo  q1, superTipo  q2, superTipo  *qres)
+{
+    float arg1, arg2;
+
+    if(q1.tipo == tipoStr || q2.tipo == tipoStr)
+    {
+        fprintf(stderr,"ASM Error: invalid rela_an operation.\n");
+        exit(1);
+    }
+
+    qres->tipo=tipoInt;
+    if(q1.tipo == tipoFloat)
+        arg1=q1.fval;
+    else
+        arg1=(float)q1.ival;
+    if(q2.tipo == tipoFloat)
+        arg2=q2.fval;
+    else
+        arg2=(float)q2.ival;
+
+    qres->ival=(int)(arg1 && arg2);
+}
+
+void rela_or(superTipo  q1, superTipo  q2, superTipo  *qres)
+{
+    float arg1, arg2;
+
+    if(q1.tipo == tipoStr || q2.tipo == tipoStr)
+    {
+        fprintf(stderr,"ASM Error: invalid rela_or operation.\n");
+        exit(1);
+    }
+
+    qres->tipo=tipoInt;
+    if(q1.tipo == tipoFloat)
+        arg1=q1.fval;
+    else
+        arg1=(float)q1.ival;
+    if(q2.tipo == tipoFloat)
+        arg2=q2.fval;
+    else
+        arg2=(float)q2.ival;
+
+    qres->ival=(int)(arg1 || arg2);
+}
+
+void rela_no(superTipo  q1, superTipo  *nul1, superTipo  *qres)
+{
+
+    if(q1.tipo == tipoStr)
+    {
+        fprintf(stderr,"ASM Error: invalid rela_no operation.\n");
+        exit(1);
+    }
+
+    qres->tipo=tipoInt;
+    if(q1.tipo == tipoFloat)
+        qres->ival=(int)(!(q1.fval));
+    else
+        qres->ival=!(q1.ival);
+}
 
 /*stack and function operations */
-//   param(temp[1],NULL,NULL);
-//   call("print",1,&ts[1]);
 //---------------------------
 
-//   param(temp[1],NULL,NULL); // put temp[1] into parameter stack
-void param(float q1, float *nulo1, float *nulo2) { _push(q1); }
-//  call    ("print",1,&ts[0]); //call a function "print" with 1 arg from stack, and return a value to ts[0].
-void call(char *q1, int i, float *qres)
+void param(superTipo q1, void *nul1, void *nul2)
 {
-    //for (i = 0; i < sizeof tabcall / sizeof tabcall[0]; i++)
-    int j=0;
-    float a[MAX_PARAM];//maximo funcao com 4 argumentos f(a0, a1, a2, a3);
+    push(q1);
+}
+
+void call(char *q1, int i, superTipo  *qres)
+{
+    int j=0, idx;
+    superTipo *g[MAX_PARAM];//maximo funcao com 4 argumentos f(a0, a1, a2, a3);
 
     if(i>MAX_PARAM)
-        fprintf(stderr, "error: cant call function with more than %d (MAX_PARAM) parameters.", MAX_PARAM);
+    {
+        fprintf(stderr, "ASM Error: cant call function with more than %d (MAX_PARAM) parameters.\n", MAX_PARAM);
+        exit(1);
+    }
 
     for(j=0; j<i && j<MAX_PARAM; j++)
-        a[j]=_pop();    //_pop all parameters
+        g[j]=pop();    //pop all parameters
 
     /* lista de funcoes */
-    if(strcmp(q1, tabcall[imprima].nome) == 0) //imprima A;
-        tabcall[imprima].endereco("%.2f\n", a[0]); //exemplo: printf("%.2f%.2f",a[0],a[1]);
+    for(idx=0; idx<MAX_TF; idx++)
+        if(strcmp(tf[idx].idNome, q1) == 0) //found!
+            break;
+    if(idx==MAX_TF)
+    {
+        fprintf(stderr, "ASM Error: function not in tf[] table (loop exausted).\n");
+        exit(1);
+    }
+
+    switch(idx)
+    {
+        case 0: //printf
+            if(g[0]->tipo==tipoStr)
+                (*tf[idx].vfunc)("%s\n", g[0]->sval); //printf("%s\n",sval);
+            else if(g[0]->tipo==tipoInt)
+                (*tf[idx].vfunc)("%d\n", g[0]->ival); //printf("%d\n",ival);
+            else /* tipoFloat */
+                (*tf[idx].vfunc)("%.2f\n", g[0]->fval); //printf("%.2f\n",fval);
+            break;
+        case 1: //scanf
+            (*tf[idx].vfunc)("%f", &qres->fval); //scanf("%f",&ts[1]);
+            qres->tipo=tipoFloat;
+            break;
+        case 2: //exit
+            (*tf[idx].vfunc)(g[0]->ival); //exit(ival)
+            break;
+        case 3: //sqrt
+            qres->fval=(*tf[idx].dfunc)(g[0]->fval); //sqrt(fval)
+            qres->tipo=tipoFloat;
+            break;
+        case 4: //exp
+            qres->fval=(*tf[idx].dfunc)(g[0]->fval); //sqrt(fval)
+            qres->tipo=tipoFloat;
+            break;
+        default:
+            fprintf(stderr, "ASM Error: function not in tf[] table. (default switch)\n");
+            exit(1);
+    }
 }

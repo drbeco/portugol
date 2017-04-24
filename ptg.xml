@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE language SYSTEM "language.dtd">
+<language name="Portugol" 
+          section="Sources" 
+	  version="1.0" 
+          kateversion="2.5.10" 
+	  indenter="cstyle" 
+	  extensions="*.ptg;*.PTG" 
+	  mimetype="text/c-portugol" 
+	  priority="5" 
+	  author="Ruben Carlo Benante (dr.beco@gmail.com)" 
+          license="GNU/GPL" >
+<!--
+    =================================================================================
+    PTG - Portugol Compiler syntax highlighting file for KDE editors Kate and Kwrite
+    =================================================================================
+    // PTG - Portugol Source File highlighter
+    // To write your portugol progrmas
+    // written by Ruben Carlo Benante. - dr.beco@gmail.com
+    // 25/may/2009, v.1.0
+    // Thanks to c.xml and bash.xml
+    
+    - Know bugs:
+    * no bugs
+    - Todo:
+    * preprocessor needs better logic, but it works the way it is.
+-->
+  <highlighting>
+    <list name="keywords">
+	    <item> inicio </item>
+	    <item> fim </item>
+	    <item> se </item>
+	    <item> entao </item>
+	    <item> senao </item>
+	    <item> enquanto </item>
+	    <item> aborte </item>
+	    <item> para </item>
+            <item> importe </item>
+            <item> define </item>
+    </list>
+    <list name="types">
+      <item> int </item>
+      <item> real </item>
+      <item> texto </item>
+    </list>
+    <list name="loperators">
+      <item> e </item>
+      <item> ou </item>
+      <item> nao </item>
+  </list>
+  <list name="functions">
+      <item> imprima </item>
+      <item> leia </item>
+      <item> saia </item>
+      <item> raiz </item>
+      <item> exp </item>
+  </list>
+    <contexts>
+      
+      <context attribute="Normal Text" lineEndContext="#stay" name="Normal" >
+        <keyword attribute="Functions" context="#stay" String="functions"/>
+        <keyword attribute="Keyword" context="#stay" String="keywords" />
+        <DetectChar attribute="String" context="string" char="&quot;" />
+        <keyword attribute="Data Type" context="#stay" String="types"/>
+        <keyword attribute="LOperators" context="#stay" String="loperators"/>
+        <Float attribute="Float" context="#stay" >
+          <AnyChar String="fF" attribute="Float" context="#stay"/>
+        </Float>
+        <Int attribute="Decimal" context="#stay" >
+          <StringDetect attribute="Decimal" context="#stay" String="ULL" insensitive="TRUE"/>
+          <StringDetect attribute="Decimal" context="#stay" String="LUL" insensitive="TRUE"/>
+          <StringDetect attribute="Decimal" context="#stay" String="LLU" insensitive="TRUE"/>
+          <StringDetect attribute="Decimal" context="#stay" String="UL" insensitive="TRUE"/>
+          <StringDetect attribute="Decimal" context="#stay" String="LU" insensitive="TRUE"/>
+          <StringDetect attribute="Decimal" context="#stay" String="LL" insensitive="TRUE"/>
+          <StringDetect attribute="Decimal" context="#stay" String="U" insensitive="TRUE"/>
+          <StringDetect attribute="Decimal" context="#stay" String="L" insensitive="TRUE"/>
+        </Int>
+        <Detect2Chars attribute="Comment" context="Commentar 1" char="/" char1="/"/>
+        <AnyChar attribute="Symbol" context="#stay" String=":!%&amp;()+,-/.*&lt;=&gt;?[]|~^&#59;"/>
+        <DetectChar attribute="Preprocessor" context="Preprocessor 1" char="#" firstNonSpace="true" />
+      </context>
+      
+      <context attribute="String" lineEndContext="#stay" name="string" >
+        <DetectChar attribute="String" context="#pop" char="&quot;" />
+      </context>
+      
+      <context attribute="Comment" lineEndContext="#pop" name="Commentar 1">
+        <LineContinue attribute="Comment" context="#stay"/>
+      </context>
+      
+      <context attribute="Preprocessor" lineEndContext="#pop" name="Preprocessor 1">
+        <LineContinue attribute="Preprocessor" context="#stay"/>
+      </context>
+    </contexts>
+    <itemDatas>
+      <itemData name="Normal Text"  defStyleNum="dsNormal" />
+      <itemData name="Keyword"      defStyleNum="dsKeyword" />
+      <itemData name="String"       defStyleNum="dsString" />
+      <itemData name="Float"        defStyleNum="dsFloat"/>
+      <itemData name="Decimal"      defStyleNum="dsDecVal"/>
+      <itemData name="Comment"      defStyleNum="dsComment"/>
+      <itemData name="Data Type"    defStyleNum="dsDataType"/>
+      <itemData name="LOperators"   defStyleNum="dsKeyword" color="#808"/>
+      <itemData name="Symbol"       defStyleNum="dsKeyword" color="#808"/>
+      <itemData name="Functions"    defStyleNum="dsFunction" />
+      <itemData name="Preprocessor" defStyleNum="dsOthers" color="#00b600"/>
+    </itemDatas>
+  </highlighting>
+  <general>
+    <comments>
+      <comment name="singleLine" start="//" />
+    </comments>
+    <keywords casesensitive="1" />
+  </general>
+</language>
