@@ -5,23 +5,23 @@
 #/*
 #    arquivo: makefile
 #    Autor: Ruben Carlo Benante
-#    Email: ***@beco.cc
+#    Email: benante@gmail.com
 #    Data: 23/04/2009
-#    Modificado: 22/03/2011
-#    Versao: Portugol v3q
+#    Modificado: 21/03/2011
+#    Versao: Portugol v3r
 #*/
 #
 # Exemplo:
 # ./flexyagcc portugol teste
 #
 # inicia os seguintes processos:
-#      flex portugol.l                                          (gera lex.yy.c)
-#      bison -dy portugol.y                                     (gera yy.tab.c e yy.tab.h)
-#      gcc y.tab.c lex.yy.c portugol.c -o portugol.bin -lm -ly  (gera portugol.bin)
+#      flex portugol.l                                   (gera lex.yy.c)
+#      yacc -d portugol.y                                (gera yy.tab.c e yy.tab.h)
+#      gcc y.tab.c lex.yy.c portugol.c -o portugol.bin   (gera portugol.bin)
 #
 # inicia opcionalmente (ultimas linhas descomentadas):
-#      portugol.bin teste.ptg teste.asm.c                (gera teste.asm.c)
-#      gcc -x c teste.asm.c -o teste.bin -lm             (gera teste.bin)
+#      portugol.bin teste.ptg teste.qdp                (gera teste.qdp)
+#      gcc -x c teste.qdp -o teste.bin -lm             (gera teste.bin)
 #
 #
 # entrada:
@@ -37,48 +37,55 @@
 #        y.tab.h  (saida do yacc, definicoes da linguagem portugol)
 #        portugol.bin (saida do gcc, arquivo executavel, finalmente o compilador portugol)
 # saida opcional:
-#        teste.asm.c   (saida do compilador portugol, arquivo em codigo de quadruplas)
-#        teste.bin     (saida do gcc, arquivo executavel, o fonte .ptg em binario)
+#        teste.qdp   (saida do compilador portugol, arquivo em codigo de quadruplas)
+#        teste.bin   (saida do gcc, arquivo executavel, o fonte .ptg em binario)
+#
+#Para compilar usando o portugol (ou compilar e executar):
+#
+# inicia os seguintes processos:
+#      portugol.bin teste.ptg teste.asm.c                  (gera teste.asm.c)
+#      gcc -x c teste.asm.c -o teste.bin -lm               (gera teste.bin)
+#
+#entrada:
+#           teste1 (arquivo em linguagem portugol extensão .ptg)
+#
+#saida:
+#           teste1.qdp (arquivo em linguagem de quadruplas)
+#           teste1.bin (arquivo executavel)
 #
 ######################################
+#echo --- Running! ---------------- ./$2.bin
+#./$2.bin
+######################################
 
-LEX  = flex
-YACC = bison
-YFLAGS  = -dy
-CC = gcc
-#CFLAGS = -g0 -O3 -Wall
-CFLAGS = -g0
-OBJS = y.tab.o lex.yy.o portugol.o
-DEPS =  portugol.h y.tab.h
-SOURCES = y.tab.c lex.yy.c portugol.c
-.PHONY : clean cleanall cleanasm run all teste
+.PHONY : clean cleanall cleanptg run all teste
 
-#portugol.bin : lex.yy.c y.tab.c y.tab.h portugol.c portugol.h
-portugol.bin : $(SOURCES) $(DEPS) $(OBJS)
-	@echo --- gcc portugol ----------------------------------------
-	$(CC) $(CFLAGS) $(OBJS) -o portugol.bin -lm -ly
-#	gcc lex.yy.c y.tab.c portugol.c -o portugol.bin -lm -ly
-#	$(CC) $(CFLAGS) $(SOURCES) -o portugol.bin -lm -ly
+#portugol.bin : lex.yy.c y.tab.c portugol.c
+portugol.bin : lex.yy.c y.tab.c portugol.c portugol.h y.tab.h
+#portugol.bin : lex.yy.o y.tab.o portugol.o
+	@echo --- gcc -------------------------------------------------
+	gcc y.tab.c lex.yy.c portugol.c -o portugol.bin -lm -ly
+#	gcc y.tab.o lex.yy.o portugol.o -o portugol.bin -lm -ly
 
-%.o : %.c
-	@echo --- gcc objects -----------------------------------------
-	$(CC) $(CFLAGS) -c $< -o $@
+#portugol.o: portugol.c portugol.h y.tab.h
+#	@echo --- gcc -c ----------------------------------------------
+#	gcc portugol.c -c -o portugol.o
+#
+#lex.yy.o : lex.yy.c portugol.h y.tab.h
+#	@echo --- gcc -c ----------------------------------------------
+#	gcc lex.yy.c -c -o lex.yy.o
+#
+#y.tab.o: y.tab.c portugol.h
+#	@echo --- gcc -c ----------------------------------------------
+#	gcc y.tab.c -c -o y.tab.o
 
-# prevent built-in YACC and LEX
-%.c: %.y
-%.c: %.l
-
-#portugol.tab.c y.tab.h : portugol.y
-#y.tab.c y.tab.h : portugol.y
-#%.c : %.y
-y.tab.c y.tab.h : portugol.y
-	@echo --- bison -----------------------------------------------
-	$(YACC) $(YFLAGS) portugol.y
-
-#%.c : %.l
 lex.yy.c : portugol.l
 	@echo --- flex ------------------------------------------------
-	$(LEX) $(LFLAGS) portugol.l
+	flex portugol.l
+
+y.tab.c y.tab.h : portugol.y
+	@echo --- bison -----------------------------------------------
+	bison -dy portugol.y -o y.tab.c
 
 teste :
 	@echo --- testing ---------------------------------------------
@@ -91,8 +98,8 @@ teste :
 	./portugol.bin $< $@
 
 %.bin : %.asm.c
-	@echo --- gcc asm ---------------------------------------------
-	$(CC) -x c $< -o $@ -lm
+	@echo --- gcc -------------------------------------------------
+	gcc -x c $< -o $@ -lm
 
 run : $(o).bin
 	@echo --- running! --------------------------------------------
@@ -101,11 +108,11 @@ run : $(o).bin
 all : $(o).bin
 
 clean:
-	-rm lex.yy.c y.tab.c y.tab.h *.o portugol.bin
+	rm lex.yy.c y.tab.c y.tab.h portugol.bin
 
 cleanall:
-	-rm lex.yy.c y.tab.c y.tab.h *.o *.bin
+	-rm lex.yy.c y.tab.c y.tab.h *.bin *.o
 
-cleanasm:
-	-rm *.asm.c
+cleanptg:
+	rm *.bin *.asm.c
 

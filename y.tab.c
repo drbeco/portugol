@@ -557,15 +557,15 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,    74,    74,    99,   102,   103,   108,   109,   112,   113,
-     118,   120,   122,   124,   137,   139,   141,   150,   151,   155,
-     156,   160,   161,   165,   166,   167,   170,   171,   172,   173,
-     174,   175,   179,   180,   181,   182,   184,   185,   186,   187,
-     189,   190,   192,   193,   194,   195,   196,   197,   198,   199,
-     200,   201,   202,   203,   204,   205,   206,   207,   208,   212,
-     213,   217,   218,   219,   220,   221,   222,   226,   227,   230,
-     231,   256,   257,   258,   264,   267,   268,   273,   274,   275,
-     276
+       0,    74,    74,    92,    95,    96,   101,   102,   105,   106,
+     111,   113,   115,   117,   130,   132,   134,   143,   144,   148,
+     149,   153,   154,   158,   159,   160,   163,   164,   165,   166,
+     167,   168,   172,   173,   174,   175,   177,   178,   179,   180,
+     182,   183,   185,   186,   187,   188,   189,   190,   191,   192,
+     193,   194,   195,   196,   197,   198,   199,   200,   201,   205,
+     206,   210,   211,   212,   213,   214,   215,   219,   220,   223,
+     224,   249,   250,   251,   257,   260,   261,   266,   267,   268,
+     269
 };
 #endif
 
@@ -1610,15 +1610,8 @@ yyreduce:
 #line 74 "portugol.y" /* yacc.c:1646  */
     {
                             //fprintf(yyout, "//    Gerado pelo compilador Portugol versao 3r\n");
-                            carregaFuncoesPreTS();
-                            //void printNodo(nodo *tn, int n, char *var)
-                            printNodo((yyvsp[0].pNodo), 0, "$1");
-                            //printf("->opr.oper='%s'\n", token($1->opr.ptn[0]->opr.oper));
-                            if((yyvsp[0].pNodo)->opr.ptn[0]!=NULL);
-                                printf("->opr.oper=%d\n", (yyvsp[0].pNodo)->opr.ptn[0]->opr.oper);
-
                             fprintf(stderr, "pass 2... (geracao de arvore de escopo)\n");
-                            exit(0);
+                            carregaFuncoesPreTS();
                             pass2((yyvsp[0].pNodo), &esco, 0); //novo passo, para retirar informacoes de indentacao e escopo
                             fprintf(stderr, "pass 3... (analise semantica e geracao de codigo)\n");
                             pass3((yyvsp[0].pNodo),0); //pass3, geracao de codigo
@@ -1629,467 +1622,467 @@ yyreduce:
                             liberaNodo((yyvsp[0].pNodo));
                             return 0;
                          }
-#line 1633 "y.tab.c" /* yacc.c:1646  */
+#line 1626 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 3:
-#line 99 "portugol.y" /* yacc.c:1646  */
+#line 92 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(INICIO, 2, (yyvsp[-2].pNodo), (yyvsp[-1].pNodo)); }
-#line 1639 "y.tab.c" /* yacc.c:1646  */
+#line 1632 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 6:
-#line 108 "portugol.y" /* yacc.c:1646  */
+#line 101 "portugol.y" /* yacc.c:1646  */
     { debugArvore = 1; }
-#line 1645 "y.tab.c" /* yacc.c:1646  */
+#line 1638 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 7:
-#line 109 "portugol.y" /* yacc.c:1646  */
+#line 102 "portugol.y" /* yacc.c:1646  */
     { debugTabela = 1; }
-#line 1651 "y.tab.c" /* yacc.c:1646  */
+#line 1644 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 8:
-#line 112 "portugol.y" /* yacc.c:1646  */
+#line 105 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = NULL; }
-#line 1657 "y.tab.c" /* yacc.c:1646  */
+#line 1650 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 9:
-#line 114 "portugol.y" /* yacc.c:1646  */
+#line 107 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr('l', 2, (yyvsp[-1].pNodo), (yyvsp[0].pNodo)); }
-#line 1663 "y.tab.c" /* yacc.c:1646  */
+#line 1656 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 10:
-#line 119 "portugol.y" /* yacc.c:1646  */
+#line 112 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr((yyvsp[-9].intval), 2, conv((yyvsp[-8].pSimb)), (yyvsp[-2].pNodo)); }
-#line 1669 "y.tab.c" /* yacc.c:1646  */
+#line 1662 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 11:
-#line 121 "portugol.y" /* yacc.c:1646  */
+#line 114 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr((yyvsp[-10].intval), 4, conv((yyvsp[-9].pSimb)), convtn((yyvsp[-7].intval)), conv((yyvsp[-6].pSimb)), (yyvsp[-2].pNodo)); }
-#line 1675 "y.tab.c" /* yacc.c:1646  */
+#line 1668 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 12:
-#line 123 "portugol.y" /* yacc.c:1646  */
+#line 116 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr((yyvsp[-13].intval), 6, conv((yyvsp[-12].pSimb)), convtn((yyvsp[-10].intval)), conv((yyvsp[-9].pSimb)), convtn((yyvsp[-7].intval)), conv((yyvsp[-6].pSimb)), (yyvsp[-2].pNodo)); }
-#line 1681 "y.tab.c" /* yacc.c:1646  */
+#line 1674 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 13:
-#line 125 "portugol.y" /* yacc.c:1646  */
+#line 118 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr((yyvsp[-16].intval), 8, conv((yyvsp[-15].pSimb)), convtn((yyvsp[-13].intval)), conv((yyvsp[-12].pSimb)), convtn((yyvsp[-10].intval)), conv((yyvsp[-9].pSimb)), convtn((yyvsp[-7].intval)), conv((yyvsp[-6].pSimb)), (yyvsp[-2].pNodo)); }
-#line 1687 "y.tab.c" /* yacc.c:1646  */
+#line 1680 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 14:
-#line 138 "portugol.y" /* yacc.c:1646  */
+#line 131 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(PRINCIPAL, 2, conv((yyvsp[-8].pSimb)), (yyvsp[-2].pNodo)); }
-#line 1693 "y.tab.c" /* yacc.c:1646  */
+#line 1686 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 15:
-#line 140 "portugol.y" /* yacc.c:1646  */
+#line 133 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(PRINCIPAL, 4, conv((yyvsp[-9].pSimb)), convtn((yyvsp[-7].intval)), conv((yyvsp[-6].pSimb)), (yyvsp[-2].pNodo)); }
-#line 1699 "y.tab.c" /* yacc.c:1646  */
+#line 1692 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 16:
-#line 142 "portugol.y" /* yacc.c:1646  */
+#line 135 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(PRINCIPAL, 6, conv((yyvsp[-12].pSimb)), convtn((yyvsp[-10].intval)), conv((yyvsp[-9].pSimb)), convtn((yyvsp[-7].intval)), conv((yyvsp[-6].pSimb)), (yyvsp[-2].pNodo)); }
-#line 1705 "y.tab.c" /* yacc.c:1646  */
+#line 1698 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 17:
-#line 150 "portugol.y" /* yacc.c:1646  */
+#line 143 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(RETORNE, 0); }
-#line 1711 "y.tab.c" /* yacc.c:1646  */
+#line 1704 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 18:
-#line 151 "portugol.y" /* yacc.c:1646  */
+#line 144 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(RETORNE, 1, (yyvsp[-1].pNodo)); }
-#line 1717 "y.tab.c" /* yacc.c:1646  */
+#line 1710 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 19:
-#line 155 "portugol.y" /* yacc.c:1646  */
+#line 148 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = (yyvsp[0].pNodo); }
-#line 1723 "y.tab.c" /* yacc.c:1646  */
+#line 1716 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 20:
-#line 156 "portugol.y" /* yacc.c:1646  */
+#line 149 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr('l', 2, (yyvsp[-1].pNodo), (yyvsp[0].pNodo)); }
-#line 1729 "y.tab.c" /* yacc.c:1646  */
+#line 1722 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 21:
-#line 160 "portugol.y" /* yacc.c:1646  */
+#line 153 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = (yyvsp[0].pNodo); }
-#line 1735 "y.tab.c" /* yacc.c:1646  */
+#line 1728 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 22:
-#line 161 "portugol.y" /* yacc.c:1646  */
+#line 154 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = (yyvsp[-2].pNodo); }
-#line 1741 "y.tab.c" /* yacc.c:1646  */
+#line 1734 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 23:
-#line 165 "portugol.y" /* yacc.c:1646  */
+#line 158 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(';', 2, NULL, NULL); }
-#line 1747 "y.tab.c" /* yacc.c:1646  */
+#line 1740 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 24:
-#line 166 "portugol.y" /* yacc.c:1646  */
+#line 159 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = (yyvsp[-1].pNodo); }
-#line 1753 "y.tab.c" /* yacc.c:1646  */
+#line 1746 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 25:
-#line 167 "portugol.y" /* yacc.c:1646  */
+#line 160 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr((yyvsp[-2].intval), 1, conv((yyvsp[-1].pSimb))); }
-#line 1759 "y.tab.c" /* yacc.c:1646  */
+#line 1752 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 26:
-#line 170 "portugol.y" /* yacc.c:1646  */
+#line 163 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(ABORTE, 0); }
-#line 1765 "y.tab.c" /* yacc.c:1646  */
+#line 1758 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 27:
-#line 171 "portugol.y" /* yacc.c:1646  */
+#line 164 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(SE, 2, (yyvsp[-3].pNodo), (yyvsp[0].pNodo)); }
-#line 1771 "y.tab.c" /* yacc.c:1646  */
+#line 1764 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 28:
-#line 172 "portugol.y" /* yacc.c:1646  */
+#line 165 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(SE, 3, (yyvsp[-5].pNodo), (yyvsp[-2].pNodo), (yyvsp[0].pNodo)); }
-#line 1777 "y.tab.c" /* yacc.c:1646  */
+#line 1770 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 29:
-#line 173 "portugol.y" /* yacc.c:1646  */
+#line 166 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(ENQUANTO, 2, (yyvsp[-2].pNodo), (yyvsp[0].pNodo)); }
-#line 1783 "y.tab.c" /* yacc.c:1646  */
+#line 1776 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 30:
-#line 174 "portugol.y" /* yacc.c:1646  */
+#line 167 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(PARA, 4, (yyvsp[-6].pNodo), (yyvsp[-4].pNodo), (yyvsp[-2].pNodo), (yyvsp[0].pNodo)); }
-#line 1789 "y.tab.c" /* yacc.c:1646  */
+#line 1782 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 31:
-#line 175 "portugol.y" /* yacc.c:1646  */
+#line 168 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = (yyvsp[0].pNodo); }
-#line 1795 "y.tab.c" /* yacc.c:1646  */
+#line 1788 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 32:
-#line 179 "portugol.y" /* yacc.c:1646  */
+#line 172 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = (yyvsp[0].pNodo); }
-#line 1801 "y.tab.c" /* yacc.c:1646  */
+#line 1794 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 33:
-#line 180 "portugol.y" /* yacc.c:1646  */
+#line 173 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = conv((yyvsp[0].pSimb)); }
-#line 1807 "y.tab.c" /* yacc.c:1646  */
+#line 1800 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 34:
-#line 181 "portugol.y" /* yacc.c:1646  */
+#line 174 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr('=', 2, conv((yyvsp[-2].pSimb)), (yyvsp[0].pNodo)); }
-#line 1813 "y.tab.c" /* yacc.c:1646  */
+#line 1806 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 35:
-#line 182 "portugol.y" /* yacc.c:1646  */
+#line 175 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(PATTRIB, 2, conv((yyvsp[-2].pSimb)), (yyvsp[0].pNodo)); }
-#line 1819 "y.tab.c" /* yacc.c:1646  */
+#line 1812 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 36:
-#line 184 "portugol.y" /* yacc.c:1646  */
+#line 177 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(INCPOS, 1, conv((yyvsp[-1].pSimb))); }
-#line 1825 "y.tab.c" /* yacc.c:1646  */
+#line 1818 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 37:
-#line 185 "portugol.y" /* yacc.c:1646  */
+#line 178 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(INCPRE, 1, conv((yyvsp[0].pSimb))); }
-#line 1831 "y.tab.c" /* yacc.c:1646  */
+#line 1824 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 38:
-#line 186 "portugol.y" /* yacc.c:1646  */
+#line 179 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(DECPOS, 1, conv((yyvsp[-1].pSimb))); }
-#line 1837 "y.tab.c" /* yacc.c:1646  */
+#line 1830 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 39:
-#line 187 "portugol.y" /* yacc.c:1646  */
+#line 180 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(DECPRE, 1, conv((yyvsp[0].pSimb))); }
-#line 1843 "y.tab.c" /* yacc.c:1646  */
+#line 1836 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 40:
-#line 189 "portugol.y" /* yacc.c:1646  */
+#line 182 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(UPONT, 1, conv((yyvsp[0].pSimb))); }
-#line 1849 "y.tab.c" /* yacc.c:1646  */
+#line 1842 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 41:
-#line 190 "portugol.y" /* yacc.c:1646  */
+#line 183 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(UEND, 1, conv((yyvsp[0].pSimb))); }
-#line 1855 "y.tab.c" /* yacc.c:1646  */
+#line 1848 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 42:
-#line 192 "portugol.y" /* yacc.c:1646  */
+#line 185 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(UMENOS, 1, (yyvsp[0].pNodo)); }
-#line 1861 "y.tab.c" /* yacc.c:1646  */
+#line 1854 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 43:
-#line 193 "portugol.y" /* yacc.c:1646  */
+#line 186 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr('+', 2, (yyvsp[-2].pNodo), (yyvsp[0].pNodo)); }
-#line 1867 "y.tab.c" /* yacc.c:1646  */
+#line 1860 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 44:
-#line 194 "portugol.y" /* yacc.c:1646  */
+#line 187 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr('-', 2, (yyvsp[-2].pNodo), (yyvsp[0].pNodo)); }
-#line 1873 "y.tab.c" /* yacc.c:1646  */
+#line 1866 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 45:
-#line 195 "portugol.y" /* yacc.c:1646  */
+#line 188 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr('*', 2, (yyvsp[-2].pNodo), (yyvsp[0].pNodo)); }
-#line 1879 "y.tab.c" /* yacc.c:1646  */
+#line 1872 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 46:
-#line 196 "portugol.y" /* yacc.c:1646  */
+#line 189 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr('/', 2, (yyvsp[-2].pNodo), (yyvsp[0].pNodo)); }
-#line 1885 "y.tab.c" /* yacc.c:1646  */
+#line 1878 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 47:
-#line 197 "portugol.y" /* yacc.c:1646  */
+#line 190 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr('%', 2, (yyvsp[-2].pNodo), (yyvsp[0].pNodo)); }
-#line 1891 "y.tab.c" /* yacc.c:1646  */
+#line 1884 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 48:
-#line 198 "portugol.y" /* yacc.c:1646  */
+#line 191 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(GE, 2, (yyvsp[-2].pNodo), (yyvsp[0].pNodo)); }
-#line 1897 "y.tab.c" /* yacc.c:1646  */
+#line 1890 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 49:
-#line 199 "portugol.y" /* yacc.c:1646  */
+#line 192 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(LE, 2, (yyvsp[-2].pNodo), (yyvsp[0].pNodo)); }
-#line 1903 "y.tab.c" /* yacc.c:1646  */
+#line 1896 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 50:
-#line 200 "portugol.y" /* yacc.c:1646  */
+#line 193 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(NE, 2, (yyvsp[-2].pNodo), (yyvsp[0].pNodo)); }
-#line 1909 "y.tab.c" /* yacc.c:1646  */
+#line 1902 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 51:
-#line 201 "portugol.y" /* yacc.c:1646  */
+#line 194 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(EQ, 2, (yyvsp[-2].pNodo), (yyvsp[0].pNodo)); }
-#line 1915 "y.tab.c" /* yacc.c:1646  */
+#line 1908 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 52:
-#line 202 "portugol.y" /* yacc.c:1646  */
+#line 195 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(GT, 2, (yyvsp[-2].pNodo), (yyvsp[0].pNodo)); }
-#line 1921 "y.tab.c" /* yacc.c:1646  */
+#line 1914 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 53:
-#line 203 "portugol.y" /* yacc.c:1646  */
+#line 196 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(LT, 2, (yyvsp[-2].pNodo), (yyvsp[0].pNodo)); }
-#line 1927 "y.tab.c" /* yacc.c:1646  */
+#line 1920 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 54:
-#line 204 "portugol.y" /* yacc.c:1646  */
+#line 197 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(E, 2, (yyvsp[-2].pNodo), (yyvsp[0].pNodo)); }
-#line 1933 "y.tab.c" /* yacc.c:1646  */
+#line 1926 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 55:
-#line 205 "portugol.y" /* yacc.c:1646  */
+#line 198 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(OU, 2, (yyvsp[-2].pNodo), (yyvsp[0].pNodo)); }
-#line 1939 "y.tab.c" /* yacc.c:1646  */
+#line 1932 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 56:
-#line 206 "portugol.y" /* yacc.c:1646  */
+#line 199 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(NAO, 1, (yyvsp[0].pNodo)); }
-#line 1945 "y.tab.c" /* yacc.c:1646  */
+#line 1938 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 57:
-#line 207 "portugol.y" /* yacc.c:1646  */
+#line 200 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr('(', 1, (yyvsp[-1].pNodo)); }
-#line 1951 "y.tab.c" /* yacc.c:1646  */
+#line 1944 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 58:
-#line 208 "portugol.y" /* yacc.c:1646  */
+#line 201 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = (yyvsp[0].pNodo); }
-#line 1957 "y.tab.c" /* yacc.c:1646  */
+#line 1950 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 59:
-#line 212 "portugol.y" /* yacc.c:1646  */
+#line 205 "portugol.y" /* yacc.c:1646  */
     { (yyval.intval) = (yyvsp[0].intval);    }
-#line 1963 "y.tab.c" /* yacc.c:1646  */
+#line 1956 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 60:
-#line 213 "portugol.y" /* yacc.c:1646  */
+#line 206 "portugol.y" /* yacc.c:1646  */
     { (yyval.intval) = NADA;  }
-#line 1969 "y.tab.c" /* yacc.c:1646  */
+#line 1962 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 61:
-#line 217 "portugol.y" /* yacc.c:1646  */
+#line 210 "portugol.y" /* yacc.c:1646  */
     { (yyval.intval) = INT;   }
-#line 1975 "y.tab.c" /* yacc.c:1646  */
+#line 1968 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 62:
-#line 218 "portugol.y" /* yacc.c:1646  */
+#line 211 "portugol.y" /* yacc.c:1646  */
     { (yyval.intval) = REAL;  }
-#line 1981 "y.tab.c" /* yacc.c:1646  */
+#line 1974 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 63:
-#line 219 "portugol.y" /* yacc.c:1646  */
+#line 212 "portugol.y" /* yacc.c:1646  */
     { (yyval.intval) = TEXTO; }
-#line 1987 "y.tab.c" /* yacc.c:1646  */
+#line 1980 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 64:
-#line 220 "portugol.y" /* yacc.c:1646  */
+#line 213 "portugol.y" /* yacc.c:1646  */
     { (yyval.intval) = PONTI; }
-#line 1993 "y.tab.c" /* yacc.c:1646  */
+#line 1986 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 65:
-#line 221 "portugol.y" /* yacc.c:1646  */
+#line 214 "portugol.y" /* yacc.c:1646  */
     { (yyval.intval) = PONTR; }
-#line 1999 "y.tab.c" /* yacc.c:1646  */
+#line 1992 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 66:
-#line 222 "portugol.y" /* yacc.c:1646  */
+#line 215 "portugol.y" /* yacc.c:1646  */
     { (yyval.intval) = PONTS; }
-#line 2005 "y.tab.c" /* yacc.c:1646  */
+#line 1998 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 67:
-#line 226 "portugol.y" /* yacc.c:1646  */
+#line 219 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = convtn(NADA); }
-#line 2011 "y.tab.c" /* yacc.c:1646  */
+#line 2004 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 68:
-#line 227 "portugol.y" /* yacc.c:1646  */
+#line 220 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr('l', 2, (yyvsp[-1].pNodo), (yyvsp[0].intval)); }
-#line 2017 "y.tab.c" /* yacc.c:1646  */
+#line 2010 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 69:
-#line 230 "portugol.y" /* yacc.c:1646  */
+#line 223 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = NULL; }
-#line 2023 "y.tab.c" /* yacc.c:1646  */
+#line 2016 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 70:
-#line 231 "portugol.y" /* yacc.c:1646  */
+#line 224 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr('l', 2, (yyvsp[-2].pNodo), (yyvsp[-1].intval)); }
-#line 2029 "y.tab.c" /* yacc.c:1646  */
+#line 2022 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 71:
-#line 256 "portugol.y" /* yacc.c:1646  */
+#line 249 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = conv((yyvsp[0].pSimb)); }
-#line 2035 "y.tab.c" /* yacc.c:1646  */
+#line 2028 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 72:
-#line 257 "portugol.y" /* yacc.c:1646  */
+#line 250 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = conv((yyvsp[0].pSimb)); }
-#line 2041 "y.tab.c" /* yacc.c:1646  */
+#line 2034 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 73:
-#line 258 "portugol.y" /* yacc.c:1646  */
+#line 251 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = conv((yyvsp[0].pSimb)); }
-#line 2047 "y.tab.c" /* yacc.c:1646  */
+#line 2040 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 74:
-#line 264 "portugol.y" /* yacc.c:1646  */
+#line 257 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(EXTERNA, 3, convtn((yyvsp[-5].intval)), conv((yyvsp[-4].pSimb)), (yyvsp[-2].pNodo)); }
-#line 2053 "y.tab.c" /* yacc.c:1646  */
+#line 2046 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 75:
-#line 267 "portugol.y" /* yacc.c:1646  */
+#line 260 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = NULL; }
-#line 2059 "y.tab.c" /* yacc.c:1646  */
+#line 2052 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 76:
-#line 268 "portugol.y" /* yacc.c:1646  */
+#line 261 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr('l', 2, (yyvsp[-1].pNodo), (yyvsp[0].pNodo)); }
-#line 2065 "y.tab.c" /* yacc.c:1646  */
+#line 2058 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 77:
-#line 273 "portugol.y" /* yacc.c:1646  */
+#line 266 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(FUNC, 1, conv((yyvsp[-2].pSimb))); }
-#line 2071 "y.tab.c" /* yacc.c:1646  */
+#line 2064 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 78:
-#line 274 "portugol.y" /* yacc.c:1646  */
+#line 267 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(FUNC, 2, conv((yyvsp[-3].pSimb)), (yyvsp[-1].pNodo)); }
-#line 2077 "y.tab.c" /* yacc.c:1646  */
+#line 2070 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 79:
-#line 275 "portugol.y" /* yacc.c:1646  */
+#line 268 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(FUNC, 3, conv((yyvsp[-5].pSimb)), (yyvsp[-3].pNodo), (yyvsp[-1].pNodo)); }
-#line 2083 "y.tab.c" /* yacc.c:1646  */
+#line 2076 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 80:
-#line 276 "portugol.y" /* yacc.c:1646  */
+#line 269 "portugol.y" /* yacc.c:1646  */
     { (yyval.pNodo) = opr(FUNC, 4, conv((yyvsp[-7].pSimb)), (yyvsp[-5].pNodo), (yyvsp[-3].pNodo), (yyvsp[-1].pNodo)); }
-#line 2089 "y.tab.c" /* yacc.c:1646  */
+#line 2082 "y.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 2093 "y.tab.c" /* yacc.c:1646  */
+#line 2086 "y.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2317,15 +2310,15 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 280 "portugol.y" /* yacc.c:1906  */
+#line 273 "portugol.y" /* yacc.c:1906  */
 
 
 /* Acha (nao cria) Id pelo seu IDX */
 tabelaSimb *achaIdx(int i)
 {
-//    char *p;
+    char *p;
     tabelaSimb *ps;
-//    int t1;
+    int t1;
 
     if(i==-1)
         return NULL;
@@ -2344,7 +2337,7 @@ tabelaSimb *achaIdx(int i)
 /* Acha/cria ID e retorna o ponteiro para a tabelaSimb */
 tabelaSimb *achaId(char *nome)
 {
-//    char *p;
+    char *p;
     tabelaSimb *ps;
 
     for(ps=tabSimb; ps < &tabSimb[MAX_SIMB]; ps++)
@@ -2366,7 +2359,7 @@ tabelaSimb *achaId(char *nome)
 /* Acha/cria ConInt e retorna o ponteiro para a TS */
 tabelaSimb *achaInt(int iv)
 {
-//    char *p;
+    char *p;
     tabelaSimb *ps;
     int i;
 
@@ -2392,7 +2385,7 @@ tabelaSimb *achaInt(int iv)
 /* Acha/cria ConFloat e retorna o ponteiro para a TS */
 tabelaSimb *achaDouble(float dv)
 {
-//    char *p;
+    char *p;
     tabelaSimb *ps;
     int i;
 
@@ -2418,7 +2411,7 @@ tabelaSimb *achaDouble(float dv)
 /* Acha/cria ConStr e retorna o ponteiro para a TS */
 tabelaSimb *achaStr(char *sv)
 {
-//    char *p;
+    char *p;
     tabelaSimb *ps;
     int i;
 
@@ -2466,7 +2459,7 @@ tabelaSimb *achaStr(char *sv)
 /* Apenas procura (nao cria) TODAS funcoes, a partir da ultima procurada, ou NULL para a primeira */
 tabelaSimb *achaFuncs(tabelaSimb *ultima)
 {
-//    char *p;
+    char *p;
     tabelaSimb *ps;
 
     if(ultima==NULL) //null? a partir do primeiro

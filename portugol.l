@@ -11,13 +11,14 @@
   #include <stdlib.h>
   #include "portugol.h"
   #include "y.tab.h"
-  //#include "portugol.tab.h"
 
   FILE *fhead=NULL;
   //extern int indente, escopo;
 
 %}
 
+%option nounput noinput
+%option yylineno
 
 LE [A-Za-zÁÉÍÓÚÀÈÌÒÙÃẼĨÕŨÂÊÎÔÛÄËÏÖÜÇÑáéíóúàèìòùãẽĩõũâêîôûäëïöüçñºª¹²³]
 DI [0-9]
@@ -31,6 +32,26 @@ TU ({LE}|{DI}|{PA}|{BT}|{SY})
 TT ({LE}|{DI}|{P1}|{BT}|{SY})
 FO ({AS}{TU}*{PL}{TU}*{AS})
 TX ({AS}{TT}*{AS})
+
+  /* 
+    % AS "\""
+    % TA [] !#$&-[^-~] : tudo exceto " % \ e nl,                 \v[^"%\\]
+    % PP "%%" : dois porcentos                                   \v\%\%
+    % BA "\\" : uma barra invertida                              \v\\
+    % TB   [ -$&-~] : tudo que pode escapar exceto % e nl        \v[^%]
+    % FO "%"({DI}*(\.{DI}+)?)?(d|f) : formato para int e float   \v\%(\d*(\.\d+)?)?(d|f)
+    % Expressão de string:
+    % AS ( TA | PP | BA TB | FO )* AS
+    % PL d=int, f=float, s=string
+
+    syntax do vi (magic):
+    "\([] !#$&-[^-~]\|%%\|\\[ -$&-~]\|%\(\d*\(\.\d\+\)\?\)\?\(d\|f\)\)*"
+    "\([^"%\\]\|%%\|\\[^%]\|%\(\d*\(\.\d\+\)\?\)\?\(d\|f\)\)*"
+    syntax do vi (very magic):
+    \v"([] !#$&-[^-~]|\%\%|\\[ -$&-~]|\%(\d*(\.\d+)?)?(d|f))*"
+    \v"([^"%\\]|\%\%|\\[^%]|\%(\d*(\.\d+)?)?(d|f))*"
+  */
+
 
 %%
 
@@ -133,7 +154,7 @@ void yyerror(char *s)
 
 int main(int ac, char **av)
 {
-    //int i;
+    int i;
 
     cabecalhoMain[0]=cabecalhoMain[1]=cabecalhoMain[MAX_CABECA-1]='\0';
     indente=0;

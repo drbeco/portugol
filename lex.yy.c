@@ -174,8 +174,27 @@ extern FILE *yyin, *yyout;
 #define EOB_ACT_END_OF_FILE 1
 #define EOB_ACT_LAST_MATCH 2
 
-    #define YY_LESS_LINENO(n)
-    #define YY_LINENO_REWIND_TO(ptr)
+    /* Note: We specifically omit the test for yy_rule_can_match_eol because it requires
+     *       access to the local variable yy_act. Since yyless() is a macro, it would break
+     *       existing scanners that call yyless() from OUTSIDE yylex. 
+     *       One obvious solution it to make yy_act a global. I tried that, and saw
+     *       a 5% performance hit in a non-yylineno scanner, because yy_act is
+     *       normally declared as a register variable-- so it is not worth it.
+     */
+    #define  YY_LESS_LINENO(n) \
+            do { \
+                int yyl;\
+                for ( yyl = n; yyl < yyleng; ++yyl )\
+                    if ( yytext[yyl] == '\n' )\
+                        --yylineno;\
+            }while(0)
+    #define YY_LINENO_REWIND_TO(dst) \
+            do {\
+                const char *p;\
+                for ( p = yy_cp-1; p >= (dst); --p)\
+                    if ( *p == '\n' )\
+                        --yylineno;\
+            }while(0)
     
 /* Return all but the first "n" matched characters back to the input stream. */
 #define yyless(n) \
@@ -572,6 +591,13 @@ static yyconst flex_int16_t yy_chk[367] =
       158,  158,  158,  158,  158,  158
     } ;
 
+/* Table of booleans, true if rule could match eol. */
+static yyconst flex_int32_t yy_rule_can_match_eol[43] =
+    {   0,
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 
+    0, 0, 0,     };
+
 static yy_state_type yy_last_accepting_state;
 static char *yy_last_accepting_cpos;
 
@@ -600,12 +626,29 @@ char *yytext;
   #include <stdlib.h>
   #include "portugol.h"
   #include "y.tab.h"
-  //#include "portugol.tab.h"
 
   FILE *fhead=NULL;
   //extern int indente, escopo;
 
-#line 609 "lex.yy.c"
+#define YY_NO_INPUT 1
+/* 
+% AS "\""
+% TA [] !#$&-[^-~] : tudo exceto " % \ e nl,                 \v[^"%\\]
+% PP "%%" : dois porcentos                                   \v\%\%
+% BA "\\" : uma barra invertida                              \v\\
+% TB   [ -$&-~] : tudo que pode escapar exceto % e nl        \v[^%]
+% FO "%"({DI}*(\.{DI}+)?)?(d|f) : formato para int e float   \v\%(\d*(\.\d+)?)?(d|f)
+% Expressão de string:
+% AS ( TA | PP | BA TB | FO )* AS
+% PL d=int, f=float, s=string
+syntax do vi (magic):
+"\([] !#$&-[^-~]\|%%\|\\[ -$&-~]\|%\(\d*\(\.\d\+\)\?\)\?\(d\|f\)\)*"
+"\([^"%\\]\|%%\|\\[^%]\|%\(\d*\(\.\d\+\)\?\)\?\(d\|f\)\)*"
+syntax do vi (very magic):
+\v"([] !#$&-[^-~]|\%\%|\\[ -$&-~]|\%(\d*(\.\d+)?)?(d|f))*"
+\v"([^"%\\]|\%\%|\\[^%]|\%(\d*(\.\d+)?)?(d|f))*"
+*/
+#line 652 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -664,8 +707,6 @@ extern int yywrap (void );
 #endif
 #endif
 
-    static void yyunput (int c,char *buf_ptr  );
-    
 #ifndef yytext_ptr
 static void yy_flex_strncpy (char *,yyconst char *,int );
 #endif
@@ -819,11 +860,11 @@ YY_DECL
 		}
 
 	{
-#line 35 "portugol.l"
+#line 56 "portugol.l"
 
 
  /* comandos reservados */
-#line 827 "lex.yy.c"
+#line 868 "lex.yy.c"
 
 	while ( 1 )		/* loops until end-of-file is reached */
 		{
@@ -869,6 +910,16 @@ yy_find_action:
 
 		YY_DO_BEFORE_ACTION;
 
+		if ( yy_act != YY_END_OF_BUFFER && yy_rule_can_match_eol[yy_act] )
+			{
+			yy_size_t yyl;
+			for ( yyl = 0; yyl < yyleng; ++yyl )
+				if ( yytext[yyl] == '\n' )
+					   
+    yylineno++;
+;
+			}
+
 do_action:	/* This label is used only to access EOF actions. */
 
 		switch ( yy_act )
@@ -882,7 +933,7 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 38 "portugol.l"
+#line 59 "portugol.l"
 {
                 tabelaSimb *ps = achaId(yytext);
                 yylval.pSimb = ps;
@@ -891,165 +942,165 @@ YY_RULE_SETUP
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 43 "portugol.l"
+#line 64 "portugol.l"
 { return INICIO; }    /* { */
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 44 "portugol.l"
+#line 65 "portugol.l"
 { return FIM; }       /* } */
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 45 "portugol.l"
+#line 66 "portugol.l"
 { return SE; }        /* if */
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 46 "portugol.l"
+#line 67 "portugol.l"
 { return ENTAO; }     /* then_separator */
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 47 "portugol.l"
+#line 68 "portugol.l"
 { return SENAO; }     /* else */
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 48 "portugol.l"
+#line 69 "portugol.l"
 { return ENQUANTO; }  /* while */
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 49 "portugol.l"
+#line 70 "portugol.l"
 { return ABORTE; }    /* exit(1) */
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 50 "portugol.l"
+#line 71 "portugol.l"
 { return PARA; }      /* for */
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 51 "portugol.l"
+#line 72 "portugol.l"
 { return INT; }       /* int */
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 52 "portugol.l"
+#line 73 "portugol.l"
 { return REAL; }      /* float */
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 53 "portugol.l"
+#line 74 "portugol.l"
 { return TEXTO; }     /* char* */
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 54 "portugol.l"
+#line 75 "portugol.l"
 { return NADA; }      /* void */
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 55 "portugol.l"
+#line 76 "portugol.l"
 { return PONT; }      /* pointer */
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 56 "portugol.l"
+#line 77 "portugol.l"
 { return EXTERNA; }   /* externa real sqrt ( real ) */
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 57 "portugol.l"
+#line 78 "portugol.l"
 { return DEFINE; }    /* define uma macro */
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 58 "portugol.l"
+#line 79 "portugol.l"
 { return RETORNE; }   /* return */
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 59 "portugol.l"
+#line 80 "portugol.l"
 { return DEBUG; }     /* pre-processor directive */
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 60 "portugol.l"
+#line 81 "portugol.l"
 { return ARVORE; }    /* turn on print-syntatic-tree option */
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 61 "portugol.l"
+#line 82 "portugol.l"
 { return TABELA; }    /* turn on print-symbol-table option */
 	YY_BREAK
 /* Pontuacao */
 case 21:
 YY_RULE_SETUP
-#line 64 "portugol.l"
+#line 85 "portugol.l"
 { return INC; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 65 "portugol.l"
+#line 86 "portugol.l"
 { return DEC; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 66 "portugol.l"
+#line 87 "portugol.l"
 { return GE; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 67 "portugol.l"
+#line 88 "portugol.l"
 { return LE; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 68 "portugol.l"
+#line 89 "portugol.l"
 { return EQ; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 69 "portugol.l"
+#line 90 "portugol.l"
 { return NE; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 70 "portugol.l"
+#line 91 "portugol.l"
 { return GT; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 71 "portugol.l"
+#line 92 "portugol.l"
 { return LT; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 72 "portugol.l"
+#line 93 "portugol.l"
 { return E; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 73 "portugol.l"
+#line 94 "portugol.l"
 { return OU; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 74 "portugol.l"
+#line 95 "portugol.l"
 { return NAO; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 76 "portugol.l"
+#line 97 "portugol.l"
 { return yytext[0]; }
 	YY_BREAK
 /* Identificadores */
 /* [a-zA-Z][a-zA-Z0-9_]*      {    tabelaSimb *ps = achaId(yytext); */
 case 33:
 YY_RULE_SETUP
-#line 81 "portugol.l"
+#line 102 "portugol.l"
 {   /* identificador: letra pode ser seguida de letra|digito|sublinhado */
                                 tabelaSimb *ps = achaId(yytext);
                                 yylval.pSimb = ps;
@@ -1059,7 +1110,7 @@ YY_RULE_SETUP
 /* Constantes */
 case 34:
 YY_RULE_SETUP
-#line 88 "portugol.l"
+#line 109 "portugol.l"
 {  /* double */
                                     tabelaSimb *ps = achaDouble(atof(yytext));
                                     yylval.pSimb = ps;
@@ -1068,7 +1119,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 94 "portugol.l"
+#line 115 "portugol.l"
 {  /* inteiro */
                tabelaSimb *ps = achaInt(atoi(yytext));
                yylval.pSimb = ps;
@@ -1077,7 +1128,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 100 "portugol.l"
+#line 121 "portugol.l"
 {  /* formato */
                tabelaSimb *ps = achaStr(yytext);
                yylval.pSimb = ps;
@@ -1087,7 +1138,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 107 "portugol.l"
+#line 128 "portugol.l"
 {  /* string */
                tabelaSimb *ps = achaStr(yytext);
                yylval.pSimb = ps;
@@ -1099,31 +1150,31 @@ YY_RULE_SETUP
 case 38:
 /* rule 38 can match eol */
 YY_RULE_SETUP
-#line 115 "portugol.l"
+#line 136 "portugol.l"
 { lineno++; }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 116 "portugol.l"
+#line 137 "portugol.l"
 ; /* faz nada */
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 117 "portugol.l"
+#line 138 "portugol.l"
 ; /* "//".*\n ; comentario de linha */
 	YY_BREAK
 /* Outras coisas */
 case 41:
 YY_RULE_SETUP
-#line 120 "portugol.l"
+#line 141 "portugol.l"
 { yyerror("caracter invalido"); }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 122 "portugol.l"
+#line 143 "portugol.l"
 ECHO;
 	YY_BREAK
-#line 1127 "lex.yy.c"
+#line 1178 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1453,43 +1504,6 @@ static int yy_get_next_buffer (void)
 		return yy_is_jam ? 0 : yy_current_state;
 }
 
-    static void yyunput (int c, register char * yy_bp )
-{
-	register char *yy_cp;
-    
-    yy_cp = (yy_c_buf_p);
-
-	/* undo effects of setting up yytext */
-	*yy_cp = (yy_hold_char);
-
-	if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
-		{ /* need to shift things up to make room */
-		/* +2 for EOB chars. */
-		register yy_size_t number_to_move = (yy_n_chars) + 2;
-		register char *dest = &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[
-					YY_CURRENT_BUFFER_LVALUE->yy_buf_size + 2];
-		register char *source =
-				&YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[number_to_move];
-
-		while ( source > YY_CURRENT_BUFFER_LVALUE->yy_ch_buf )
-			*--dest = *--source;
-
-		yy_cp += (int) (dest - source);
-		yy_bp += (int) (dest - source);
-		YY_CURRENT_BUFFER_LVALUE->yy_n_chars =
-			(yy_n_chars) = YY_CURRENT_BUFFER_LVALUE->yy_buf_size;
-
-		if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
-			YY_FATAL_ERROR( "flex scanner push-back overflow" );
-		}
-
-	*--yy_cp = (char) c;
-
-	(yytext_ptr) = yy_bp;
-	(yy_hold_char) = *yy_cp;
-	(yy_c_buf_p) = yy_cp;
-}
-
 #ifndef YY_NO_INPUT
 #ifdef __cplusplus
     static int yyinput (void)
@@ -1559,6 +1573,11 @@ static int yy_get_next_buffer (void)
 	c = *(unsigned char *) (yy_c_buf_p);	/* cast for 8-bit char's */
 	*(yy_c_buf_p) = '\0';	/* preserve yytext */
 	(yy_hold_char) = *++(yy_c_buf_p);
+
+	if ( c == '\n' )
+		   
+    yylineno++;
+;
 
 	return c;
 }
@@ -2026,6 +2045,9 @@ static int yy_init_globals (void)
      * This function is called from yylex_destroy(), so don't allocate here.
      */
 
+    /* We do not touch yylineno unless the option is enabled. */
+    yylineno =  1;
+    
     (yy_buffer_stack) = 0;
     (yy_buffer_stack_top) = 0;
     (yy_buffer_stack_max) = 0;
@@ -2118,7 +2140,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 121 "portugol.l"
+#line 142 "portugol.l"
 
 
 
@@ -2134,7 +2156,7 @@ void yyerror(char *s)
 
 int main(int ac, char **av)
 {
-    //int i;
+    int i;
 
     cabecalhoMain[0]=cabecalhoMain[1]=cabecalhoMain[MAX_CABECA-1]='\0';
     indente=0;

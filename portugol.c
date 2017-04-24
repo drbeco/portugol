@@ -25,19 +25,28 @@
 #include <math.h>
 #include "portugol.h"
 #include "y.tab.h"
-//#include "portugol.tab.h"
 
 #define debug 1
+
+// #define ENUM_MACRO(name, offset, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12)\
+//     enum name { v1 = offset, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12};\
+//     const char *name##Strings[] = { #v1, #v2, #v3, #v4, #v5, #v6, #v7, #v8, #v9, #v10, #v11, #v12 };\
+//     const char *name##ToString(value) { return name##Strings[value - offset]; }
+// ENUM_MACRO(Month, 1, January, February, March, April, May, June, July, August, September, October, November, December);
+// 		enum Month me=January;
+// 		const char *st = MonthToString(me);
+//
+// 		for(m=0; m<24; m++)
+// 		{
+// 			printf("%s, ", MonthToString(me));
+// 			me = ((++me)%13)?:January;
+// 		}
 
 char *sTipoDado[18]={"tipoIdUndef", "tipoConInt", "tipoConDouble", "tipoConStr", "tipoIdInt", "tipoIdDouble", "tipoIdStr",
 "tipoIdPointInt", "tipoIdPointDouble", "tipoIdPointStr",
 "tipoIdFuncInt", "tipoIdFuncDouble", "tipoIdFuncStr", /*"tipoIdFuncChar", */ "tipoIdFuncVoid",
 "tipoIdFuncPointVoid", "tipoIdFuncPointInt", "tipoIdFuncPointDouble", "tipoIdFuncPointStr"};
 char *sTipoBase[8]={"tipoUndef", "tipoInt", "tipoDouble", "tipoStr", "tipoVoid", "tipoPointInt", "tipoPointDouble", "tipoPointStr"};
-extern int debugArvore;
-extern int debugTabela;
-extern char cabecalhoMain[MAX_CABECA];
-extern tipoBase tipoRet;
 escopo esco={1, NULL, NULL}; /* escopo 1: global */
 
 //insere informacoes sobre escopo e indentacao
@@ -1412,8 +1421,6 @@ void printTS(void)
             printf("tabSimb[%d].idFunc=%s\n", n, tabSimb[n].idFunc);
             printf("tabSimb[%d].vfunc=%p\n", n, tabSimb[n].vfunc);
             break;
-        default:
-            printf("default switch\n");
         }
         if(tabSimb[n].pes!=NULL)
         {
@@ -1553,8 +1560,6 @@ void printNodo(nodo *tn, int n, char *var)
             printf("(%d) %s->pSimb->idFunc=%s\n", n, var, tn->pSimb->idFunc);
             printf("(%d) %s->pSimb->vfunc=%p\n", n, var, tn->pSimb->vfunc);
             break;
-        default:
-            printf("switch default!\n");
         }
         if(tn->pSimb->pes!=NULL)
         {
@@ -1587,7 +1592,7 @@ void printNodo(nodo *tn, int n, char *var)
     else
         if (tn->tipoN==tipoOper) //tipoOper
         {
-//             if (tn->opr.oper!='l')
+//            if (tn->opr.oper!='l')
             {
                 printf("----------------------------\n");
                 printf("(%d) %s->tipoN=tipoOper\n", n, var);

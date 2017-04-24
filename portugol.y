@@ -73,15 +73,8 @@ extern int indente;
 programa:
     conjunto              {
                             //fprintf(yyout, "//    Gerado pelo compilador Portugol versao 3r\n");
-                            carregaFuncoesPreTS();
-                            //void printNodo(nodo *tn, int n, char *var)
-                            printNodo($1, 0, "$1");
-                            //printf("->opr.oper='%s'\n", token($1->opr.ptn[0]->opr.oper));
-                            if($1->opr.ptn[0]!=NULL);
-                                printf("->opr.oper=%d\n", $1->opr.ptn[0]->opr.oper);
-
                             fprintf(stderr, "pass 2... (geracao de arvore de escopo)\n");
-                            exit(0);
+                            carregaFuncoesPreTS();
                             pass2($1, &esco, 0); //novo passo, para retirar informacoes de indentacao e escopo
                             fprintf(stderr, "pass 3... (analise semantica e geracao de codigo)\n");
                             pass3($1,0); //pass3, geracao de codigo
@@ -282,9 +275,9 @@ funcao:
 /* Acha (nao cria) Id pelo seu IDX */
 tabelaSimb *achaIdx(int i)
 {
-//    char *p;
+    char *p;
     tabelaSimb *ps;
-//    int t1;
+    int t1;
 
     if(i==-1)
         return NULL;
@@ -303,7 +296,7 @@ tabelaSimb *achaIdx(int i)
 /* Acha/cria ID e retorna o ponteiro para a tabelaSimb */
 tabelaSimb *achaId(char *nome)
 {
-//    char *p;
+    char *p;
     tabelaSimb *ps;
 
     for(ps=tabSimb; ps < &tabSimb[MAX_SIMB]; ps++)
@@ -325,7 +318,7 @@ tabelaSimb *achaId(char *nome)
 /* Acha/cria ConInt e retorna o ponteiro para a TS */
 tabelaSimb *achaInt(int iv)
 {
-//    char *p;
+    char *p;
     tabelaSimb *ps;
     int i;
 
@@ -351,7 +344,7 @@ tabelaSimb *achaInt(int iv)
 /* Acha/cria ConFloat e retorna o ponteiro para a TS */
 tabelaSimb *achaDouble(float dv)
 {
-//    char *p;
+    char *p;
     tabelaSimb *ps;
     int i;
 
@@ -377,7 +370,7 @@ tabelaSimb *achaDouble(float dv)
 /* Acha/cria ConStr e retorna o ponteiro para a TS */
 tabelaSimb *achaStr(char *sv)
 {
-//    char *p;
+    char *p;
     tabelaSimb *ps;
     int i;
 
@@ -425,7 +418,7 @@ tabelaSimb *achaStr(char *sv)
 /* Apenas procura (nao cria) TODAS funcoes, a partir da ultima procurada, ou NULL para a primeira */
 tabelaSimb *achaFuncs(tabelaSimb *ultima)
 {
-//    char *p;
+    char *p;
     tabelaSimb *ps;
 
     if(ultima==NULL) //null? a partir do primeiro
